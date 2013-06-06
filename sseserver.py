@@ -102,7 +102,7 @@ USAGE
             SseHTTPServer.SseHTTPRequestHandler.event_queue.put(message)
 
         Handler = SseHTTPServer.SseHTTPRequestHandler
-        httpd = SocketServer.TCPServer(("127.0.0.1", port), Handler)
+        httpd = SocketServer.ThreadingTCPServer(("127.0.0.1", port), Handler)
         httpd.serve_forever()
 
         return 0
