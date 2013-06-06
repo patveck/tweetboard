@@ -1,0 +1,4 @@
+body { font-family:Arial Narrow,Arial,Helvetica,sans-serif; }
+.widget { height: 500px; border: 1px solid black; box-shadow: 0 1px 2px rgba(0,0,0,0.7); }
+.widget-title { background-color: #000000; color: #FFFFFF; }
+.widget textarea { -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box; width: 100%;}

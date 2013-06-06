@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Pascal's Twitter Dashboard</title>
+    <link rel="stylesheet" type="text/css" href="css/960.css">
+    <link rel="stylesheet" type="text/css" href="css/dashboard.css">
+    <script src="js/jquery-1.8.2.min.js"></script>
+    <script src="js/highcharts.js"></script>
+    <script src="js/highcharts_uttheme.js"></script>
+    <script>
+var chart1; 
+$(function () { 
+    $('#btUpdateWidgetButton').click(function() {
+        console.log("Button btUpdateWidgetButton clicked");
+        var newOptions = '';
+        var theText = $('#txUpdateWidgetText').val();
+        try {
+            newOptions = $.parseJSON(theText);
+        } catch(e) {
+            alert("parseJSON() raised exception: " + e.toString() + ".");
+        }
+        chart1.destroy();
+        try {
+            chart1 = new Highcharts.Chart(newOptions);
+        } catch(e) {
+            alert("HighCharts.Chart() raised exception: " + e.toString() + ".");
+        }
+    });
+    chart1 = new Highcharts.Chart({
+        chart: {
+            type: 'spline',
+            renderTo: 'chart1',
+            animation: Highcharts.svg
+        },
+        title: {
+            text: 'Live random data'
+        },
+        xAxis: {
+            type: 'datetime',
+            tickPixelInterval: 150
+        },
+        yAxis: {
+            title: {
+                text: 'Value'
+                },
+            plotLines: [{
+                value: 0,
+                width: 1,
+                color: '#808080'
+            }]
+        },
+        series: [{
+            name: 'Random data',
+            data: (function() {
+                // generate an array of random data
+                var data = [],
+                    time = (new Date()).getTime(),
+                    i;
+    
+                for (i = -19; i <= 0; i++) {
+                    data.push({
+                        x: time + i * 1000,
+                        y: Math.random()
+                    });
+                }
+                return data;
+                })()
+        }]
+    });
+    if (!!window.EventSource) {
+        var source = new EventSource('events');
+    } else {
+        // Result to xhr polling :(
+    }
+    source.addEventListener('message', function(e) {
+        console.log("message event:" + e.data);
+        $('#txMessages').append("message event:" + e.data + "\n");
+    }, false);
+    source.addEventListener('addpoint', function(e) {
+    	var newXY;
+        console.log("addpoint event:" + e.data);
+        $('#txMessages').append("addpoint event:" + e.data + "\n");
+        try {
+            newXY = $.parseJSON(e.data);
+        } catch(e) {
+            alert("parseJSON() raised exception: " + e.toString() + ".");
+        }
+        chart1.series[0].addPoint([newXY["X"], newXY["Y"]], true, true);
+    }, false);    
+    source.addEventListener('open', function(e) {
+        console.log("EventSource connection opened.");
+        $('#txMessages').append("EventSource connection opened.\n");
+    }, false);
+    source.addEventListener('error', function(e) {
+        if (e.readyState == EventSource.CLOSED) {
+            console.log("EventSource connection closed.");
+            $('#txMessages').append("EventSource connection closed.\n");
+        } else {
+            console.log("EventSource error");
+            $('#txMessages').append("EventSource error.\n");
+        }
+    }, false);
+});
+    </script>
+  </head>
+  <body>
+    <div class="container_12">
+      <h1>Pascal's Twitter Dashboard.</h1>
+      <div class="grid_4">
+        <div class="widget">
+          <div class="widget-title">First chart</div>
+          <div class="widget-contents">
+	        <div id="chart1" style="width:100%; height:400px;"></div>
+          </div>
+        </div>
+      </div>
+      <div class="grid_4">
+        <div class="widget">
+          <div class="widget-title">Local test widget</div>
+          <div class="widget-contents">
+            <textarea id="txUpdateWidgetText" rows="20" width="100%" placeholder="HighCharts options object in JSON notation."></textarea>
+            <br>
+            <button id="btUpdateWidgetButton" type="button">Update</button>
+          </div>
+        </div>
+      </div>
+      <div class="grid_4">
+        <div class="widget">
+          <div class="widget-title">Message monitor</div>
+          <div class="widget-contents">
+              <textarea id="txMessages" rows="20" width="100%"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
