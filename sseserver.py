@@ -21,6 +21,9 @@ import SseHTTPServer
 import SocketServer
 import logging
 import Queue
+import threading
+import time
+import random
 
 from argparse import ArgumentParser, FileType
 from argparse import RawDescriptionHelpFormatter
@@ -45,11 +48,19 @@ class CLIError(Exception):
         return self.msg
 
 
-def myQueue():
-    return [
-            {"data": ["Line 1 of first message.", "Line 2 of first message."]},
-            {"data": ["Line 1 of second message.", "Line 2 of second message."]}
-            ]
+myQueue = [{"data": ["Line 1 of first message.", "Line 2 of first message."]},
+           {"data": ["Line 1 of second message.", "Line 2 of second message."]}
+          ]
+
+class queueFiller(threading.Thread):
+    def run(self):
+        global myQueue
+        print "queueuFiller: started in thread %s." % self.ident
+        while True:
+            myData = 'data: {"X": %s, "Y": %s}\n' % (int(time.time()) * 1000, random.random())
+            SseHTTPServer.SseHTTPRequestHandler.event_queue.put({"event": "addpoint", "data": myData})
+            time.sleep(1)
+
 
 def main(argv=None):
     '''Command line options.'''
@@ -98,7 +109,7 @@ USAGE
         if verbose > 0:
             logging.info("sseserver.py: Serving contents of %s via port %s.", infile.name, port)
 
-        for message in myQueue():
+        for message in myQueue:
             SseHTTPServer.SseHTTPRequestHandler.event_queue.put(message)
 
         Handler = SseHTTPServer.SseHTTPRequestHandler
