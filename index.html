@@ -5,12 +5,37 @@
     <title>Pascal's Twitter Dashboard</title>
     <link rel="stylesheet" type="text/css" href="css/960.css">
     <link rel="stylesheet" type="text/css" href="css/dashboard.css">
-    <script src="js/jquery-1.8.2.min.js"></script>
-    <script src="js/highcharts.js"></script>
-    <script src="js/highcharts_uttheme.js"></script>
-    <script>
+    <link rel="stylesheet" type="text/css" href="css/jasmine.css">
+    <script type="text/javascript" src="lib/js/jquery-1.8.2.min.js"></script>
+    <script type="text/javascript" src="lib/js/highcharts.js"></script>
+    <script type="text/javascript" src="lib/js/jasmine.js"></script>
+    <script type="text/javascript" src="lib/js/jasmine-html.js"></script>
+
+    <!-- include source files here... -->
+    <script type="text/javascript" src="js/highcharts_uttheme.js"></script>
+
+    <!-- include spec files here... --> 
+    <script type="text/javascript" src="tests/jasmine-specs/UTThemeSpec.js"></script>
+    
+    <script type="text/javascript">
 var chart1; 
 $(function () { 
+
+    var jasmineEnv = jasmine.getEnv();
+    jasmineEnv.updateInterval = 1000;
+
+    var htmlReporter = new jasmine.HtmlReporter();
+
+    jasmineEnv.addReporter(htmlReporter);
+
+    jasmineEnv.specFilter = function(spec) {
+      return htmlReporter.specFilter(spec);
+    };
+	
+	$('#btRunJasmineTests').click(function() {
+        jasmineEnv.execute();
+    }); 
+
     $('#btUpdateWidgetButton').click(function() {
         console.log("Button btUpdateWidgetButton clicked");
         var newOptions = '';
@@ -134,5 +159,6 @@ $(function () {
         </div>
       </div>
     </div>
+    <button id="btRunJasmineTests" type="button">Run tests</button>
   </body>
 </html>
