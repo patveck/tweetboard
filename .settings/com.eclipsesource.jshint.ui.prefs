@@ -1,2 +1,5 @@
 eclipse.preferences.version=1
-included=js/*
+excluded=lib//*
+included=//*.js
+options=strict\: true,\r\njquery\: true
+projectSpecificOptions=true
