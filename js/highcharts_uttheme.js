@@ -3,7 +3,7 @@
  * @author Torstein Hønsi
  */
 
-Highcharts.theme = {
+define({
 	colors: ["#3F9C35", "#CF0072", "#FED100", "#0094B3", "#C60C30", "#00675A", "#4F2D7F", "#887B1B"],
 	chart: {
 		className: 'skies',
@@ -82,7 +82,5 @@ Highcharts.theme = {
 			color: '#3E576F'
 		}
 	}
-};
+});
 
-// Apply the theme
-var highchartsOptions = Highcharts.setOptions(Highcharts.theme);
