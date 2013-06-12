@@ -1,51 +1,13 @@
 /**
- * 
+ * @module main 
  */
 
 define(["jquery", "hcharts", "highcharts_uttheme", "jasmine-html"], function($, hc, hct, jasmine) {
 	"use strict";
 
-	var chart1; 
-	$(function () { 
-
-		var jasmineEnv = jasmine.getEnv();
-		jasmineEnv.updateInterval = 1000;
-
-		var htmlReporter = new jasmine.HtmlReporter();
-
-		jasmineEnv.addReporter(htmlReporter);
-
-		jasmineEnv.specFilter = function(spec) {
-			return htmlReporter.specFilter(spec);
-		};
-
-		$('#btRunJasmineTests').click(function() {
-			require(["jasmine-specs/UTThemeSpec"], function(specs) {
-				jasmineEnv.execute();
-			});
-		}); 
-
-		$('#btUpdateWidgetButton').click(function() {
-			console.log("Button btUpdateWidgetButton clicked");
-			var newOptions = '';
-			var theText = $('#txUpdateWidgetText').val();
-			try {
-				newOptions = $.parseJSON(theText);
-			} catch(e) {
-				alert("parseJSON() raised exception: " + e.toString() + ".");
-			}
-			chart1.destroy();
-			try {
-				chart1 = new Highcharts.Chart(newOptions);
-			} catch(e) {
-				alert("HighCharts.Chart() raised exception: " + e.toString() + ".");
-			}
-		});
-
-		// Apply the theme
-		var highchartsOptions = hc.setOptions(hct);
-
-		chart1 = new hc.Chart({
+	return {
+		source: null,
+		chart1: new hc.Chart({
 			chart: {
 				type: 'spline',
 				renderTo: 'chart1',
@@ -85,40 +47,73 @@ define(["jquery", "hcharts", "highcharts_uttheme", "jasmine-html"], function($, 
 					return data;
 				})()
 			}]
-		});
-		if (!!window.EventSource) {
-			var source = new EventSource('events');
-		} else {
-			// Result to xhr polling :(
-		}
-		source.addEventListener('message', function(e) {
-			console.log("message event:" + e.data);
-			$('#txMessages').append("message event:" + e.data + "\n");
-		}, false);
-		source.addEventListener('addpoint', function(e) {
-			var newXY;
-			console.log("addpoint event:" + e.data);
-			$('#txMessages').append("addpoint event:" + e.data + "\n");
-			try {
-				newXY = $.parseJSON(e.data);
-			} catch(e) {
-				alert("parseJSON() raised exception: " + e.toString() + ".");
-			}
-			chart1.series[0].addPoint([newXY["X"], newXY["Y"]], true, true);
-		}, false);    
-		source.addEventListener('open', function(e) {
-			console.log("EventSource connection opened.");
-			$('#txMessages').append("EventSource connection opened.\n");
-		}, false);
-		source.addEventListener('error', function(e) {
-			if (e.readyState == EventSource.CLOSED) {
-				console.log("EventSource connection closed.");
-				$('#txMessages').append("EventSource connection closed.\n");
-			} else {
-				console.log("EventSource error");
-				$('#txMessages').append("EventSource error.\n");
-			}
-		}, false);
-	});
+		}),
+		
+		highchartsOptions: hc.setOptions(hct), // Apply the theme 
 
+		jasmineEnv: jasmine.getEnv(),
+		htmlReporter: new jasmine.HtmlReporter(),
+
+		run: function() {
+			this.jasmineEnv.updateInterval = 1000;			
+			this.jasmineEnv.addReporter(this.htmlReporter);
+			this.jasmineEnv.specFilter = $.proxy(function(spec) {
+				return this.htmlReporter.specFilter(spec);
+			}, this);
+			$('#btRunJasmineTests').click(function() {
+				require(["jasmine-html", "jasmine-specs/UTThemeSpec"], function(jasmine, spec) { 
+					jasmine.getEnv().execute(); });
+			});
+			$('#btUpdateWidgetButton').click(function() {
+				console.log("Button btUpdateWidgetButton clicked");
+				var newOptions = '';
+				var theText = $('#txUpdateWidgetText').val();
+				try {
+					newOptions = $.parseJSON(theText);
+				} catch(e) {
+					alert("parseJSON() raised exception: " + e.toString() + ".");
+				}
+				this.chart1.destroy();
+				try {
+					this.chart1 = new Highcharts.Chart(newOptions);
+				} catch(e) {
+					alert("HighCharts.Chart() raised exception: " + e.toString() + ".");
+				}
+			});
+			if (!!window.EventSource) {
+				this.source = new EventSource('events');
+			} else {
+				// Result to xhr polling :(
+			}
+			this.source.addEventListener('message', function(event) {
+				console.log("message event:" + event.data);
+				$('#txMessages').append("message event:" + event.data + "\n");
+			}, false);
+			this.source.addEventListener('addpoint', $.proxy(function(event) {
+				var newXY;
+				console.log("addpoint event:" + event.data);
+				$('#txMessages').append("addpoint event:" + event.data + "\n");
+				try {
+					newXY = $.parseJSON(event.data);
+				} catch(e) {
+					alert("parseJSON() raised exception: " + e.toString() + ".");
+				}
+				this.chart1.series[0].addPoint([newXY.X, newXY.Y], true, true);
+			}, this), false);    
+			this.source.addEventListener('open', function(event) {
+				console.log("EventSource connection opened.");
+				$('#txMessages').append("EventSource connection opened.\n");
+			}, false);
+			this.source.addEventListener('error', function(event) {
+				if (e.readyState == EventSource.CLOSED) {
+					console.log("EventSource connection closed.");
+					$('#txMessages').append("EventSource connection closed.\n");
+				} else {
+					console.log("EventSource error");
+					$('#txMessages').append("EventSource error.\n");
+				}
+			}, false);
+
+		}
+	};
 });

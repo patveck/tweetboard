@@ -1,6 +1,11 @@
 /* jshint undef: true, unused: true */
 /* global define, describe, it, expect */
 
+/**
+ * @module UTThemeSpec
+ * @author Pascal van Eck
+ */
+
 define(["highcharts_uttheme"], function(hct) {
 	"use strict";
 	describe("Dashboard has UT theme (highcharts_uttheme)", function() {
