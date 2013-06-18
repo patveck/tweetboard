@@ -1,0 +1,20 @@
+{
+  "name": "tweetboard",
+  "version": "0.1.0",
+  "description": "Infrastructure for course INF M1.1 of University of Twente.",
+  "main": "index.html",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "karma start karma.conf.js"
+  },
+  "repository": "",
+  "keywords": [
+    "Twitter",
+    "dashboard"
+  ],
+  "author": "Pascal van Eck",
+  "license": "cc-by-nc",
+  "gitHead": "e190a568552dca992b8040b287e5237f4e887800"
+}
