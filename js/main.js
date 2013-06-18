@@ -2,52 +2,12 @@
  * @module main 
  */
 
-define(["jquery", "hcharts", "highcharts_uttheme", "jasmine-html"], function($, hc, hct, jasmine) {
+define(["jquery", "hcharts", "highcharts_uttheme", "jasmine-html", "gadget"], function($, hc, hct, jasmine, gadget) {
 	"use strict";
 
 	return {
 		source: null,
-		chart1: new hc.Chart({
-			chart: {
-				type: 'spline',
-				renderTo: 'chart1',
-				animation: Highcharts.svg
-			},
-			title: {
-				text: 'Live random data'
-			},
-			xAxis: {
-				type: 'datetime',
-				tickPixelInterval: 150
-			},
-			yAxis: {
-				title: {
-					text: 'Value'
-				},
-				plotLines: [{
-					value: 0,
-					width: 1,
-					color: '#808080'
-				}]
-			},
-			series: [{
-				name: 'Random data',
-				data: (function() {
-					// generate an array of random data
-					var data = [],
-					time = (new Date()).getTime(),
-					i;
-
-					for (i = -19; i <= 0; i++) {
-						data.push({
-							x: time + i * 1000,
-							y: Math.random()
-						});
-					}
-					return data;
-				})()
-			}]
-		}),
+		chart1: null,
 		
 		highchartsOptions: hc.setOptions(hct), // Apply the theme 
 
@@ -60,6 +20,50 @@ define(["jquery", "hcharts", "highcharts_uttheme", "jasmine-html"], function($, 
 			this.jasmineEnv.specFilter = $.proxy(function(spec) {
 				return this.htmlReporter.specFilter(spec);
 			}, this);
+			$("#cell1").addChartGadget({id: "firstGraph", title: "The first chart",
+				chartConfig: {
+					chart: {
+						type: 'spline',
+						animation: Highcharts.svg
+					},
+					title: {
+						text: 'Live random data'
+					},
+					xAxis: {
+						type: 'datetime',
+						tickPixelInterval: 150
+					},
+					yAxis: {
+						title: {
+							text: 'Value'
+						},
+						plotLines: [{
+							value: 0,
+							width: 1,
+							color: '#808080'
+						}]
+					},
+					series: [{
+						name: 'Random data',
+						data: (function() {
+							// generate an array of random data
+							var data = [],
+							time = (new Date()).getTime(),
+							i;
+
+							for (i = -19; i <= 0; i++) {
+								data.push({
+									x: time + i * 1000,
+									y: Math.random()
+								});
+							}
+							return data;
+						})()
+					}]
+				}}); 
+			$("#cell2").addMessageGadget({id: "testGadget", title: "Local test gadget"});
+			$("#cell3").addMonitorGadget({id: "monitorGadget", title: "Message monitor"});
+			
 			$('#btRunJasmineTests').click(function() {
 				require(["jasmine-html", "jasmine-specs/UTThemeSpec"], function(jasmine, spec) { 
 					jasmine.getEnv().execute(); });
