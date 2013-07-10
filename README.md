@@ -5,6 +5,13 @@ Starting September 2013, the [University of Twente](http://utwente.nl/en/) gradu
 
 In the first course in the Computer Science program, we offer a fully-functioning Twitter monitoring dashboard written in JavaScript and Python for students to configure, adapt and extend. This Github site contains the source
 
+Getting started
+---------------
+
+TweetBoard consists of a frontend written in HTML/CSS/JavaScript and a backend written in pure Python. To run Tweetboard, execute the following two steps:
+
+1. Start the server by running sseserver.py. On Windows, assuming that .py files are associated with the Python interpreter, this can be done by double-clicking sseserver.py. The server by default listens to port 7737.
+2. Start the frontend by loading index.html in a browser. Currently, only Chrome and Firefox are known to work. Assuming that the server listens to port 7737, point your browser at [http://localhost:7737](http://localhost:7737) to start the frontend.
 
 
 License
