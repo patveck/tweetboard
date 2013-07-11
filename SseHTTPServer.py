@@ -1,13 +1,13 @@
-"""Server-sent events module.
+"""SseHTTPRequestHandler: HTTP GET request handler for server-sent events.
 
-sse is a pure Python module that serves server-sent events to web browsers. It is only dependent
+SseHTTPRequestHandler is a pure Python class that serves server-sent events to web browsers. It is only dependent
 on standard library modules.
 
 See http://dev.w3.org/html5/eventsource/
 
 Created on 31 mei 2013
 
-@author: patveck
+@author: Pascal van Eck
 
 """
 
@@ -15,11 +15,10 @@ Created on 31 mei 2013
 __version__ = "0.1"
 
 import http.server
-import queue
 import threading
 import time
 import sys
-import random
+import logging
 
 
 class SseHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
@@ -32,7 +31,12 @@ class SseHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 
     eventsource_path = "/events"
 
-    event_queue = queue.Queue()
+    event_queue_factory = None
+
+    def setup(self):
+        self.logger = logging.getLogger(__name__)
+        self.logger.info("SseHTTPRequestHandler(Thread-%s): setup() called", threading.current_thread().ident)
+        http.server.SimpleHTTPRequestHandler.setup(self)
 
     def do_GET(self):
         """Serve a GET request."""
@@ -47,31 +51,36 @@ class SseHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                This sends the response code and MIME headers.
 
         """
-        _my_name = "Thread-%s" % threading.current_thread().ident
-        print("SseHTTPRequestHandler(%s): sending events" % _my_name)
+
+        if SseHTTPRequestHandler.event_queue_factory is None:
+            self.logger.critical("SseHTTPRequestHandler(Thread-%s): event_queue_factory not set", threading.current_thread().ident)
+            exit()
+
+        self._event_queue = SseHTTPRequestHandler.event_queue_factory("Thread-%s" % threading.current_thread().ident)
+        logging.info("SseHTTPRequestHandler(Thread-%s): registered queue, start sending events", threading.current_thread().ident)
         self.send_response(200)
         self.send_header("Content-type", "text/event-stream")
         self.end_headers()
         _message_number = 0
-        while True:
+        _stop = False
+        while not _stop:
             _message_number += 1
             try:
                 if self.wfile.closed:
                     raise RuntimeError("Response object closed.")
                 self.wfile.write(("id: %s\n" % _message_number).encode('UTF-8', 'replace'))
-                if SseHTTPRequestHandler.event_queue.empty():
-                    self.wfile.write(b"event: addpoint\n")
-                    self.wfile.write(('data: {"X": %s, "Y": %s}\n' % (int(time.time()) * 1000, random.random())).encode('UTF-8', 'replace'))
-                else:
-                    for _line in SseHTTPRequestHandler.event_queue.get()["data"]:
-                        self.wfile.write(("data: %s\n" % _line).encode('UTF-8', 'replace'))
+                _message_contents = self._event_queue.get()
+                self.wfile.write(("event: %s\n" % _message_contents["event"]).encode('UTF-8', 'replace'))
+                for _line in _message_contents["data"]:
+                    self.wfile.write(("data: %s\n" % _line).encode('UTF-8', 'replace'))
                 self.wfile.write(b"\n")
                 self.wfile.flush()
             except IOError as e:
-                print("_SseSender({0}): I/O error({1}): {2}".format(_my_name, e.errno, e.strerror))
+                logging.error("_SseSender(Thread-{0}): I/O error({1}): {2}".format(threading.current_thread().ident, e.errno, e.strerror))
+                if e.errno == 10053:
+                    _stop = True
             except:
-                print("_SseSender: Unexpected error:", sys.exc_info()[0])
-            time.sleep(1)
+                logging.error("_SseSender: Unexpected error:", sys.exc_info()[0])
 
 
 def test(HandlerClass=SseHTTPRequestHandler,
