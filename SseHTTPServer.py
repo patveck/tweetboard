@@ -16,7 +16,6 @@ __version__ = "0.1"
 
 import http.server
 import threading
-import time
 import sys
 import logging
 
@@ -39,7 +38,10 @@ class SseHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         http.server.SimpleHTTPRequestHandler.setup(self)
 
     def do_GET(self):
-        """Serve a GET request."""
+        """Serve a GET request. If and only if the request is for path eventsource_path (by default: /events),
+        then serve events according to the SSE W3C recommendation. Otherwise, serve files by delegating to
+        SimpleHTTPServer from the Python standard library.
+        """
         if self.path == SseHTTPRequestHandler.eventsource_path:
             self.send_events()
         else:
