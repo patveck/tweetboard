@@ -18,9 +18,9 @@ sseserver is a description
 import sys
 import os
 import SseHTTPServer
-import SocketServer
+import socketserver
 import logging
-import Queue
+import queue
 import threading
 import time
 import random
@@ -55,7 +55,7 @@ myQueue = [{"data": ["Line 1 of first message.", "Line 2 of first message."]},
 class queueFiller(threading.Thread):
     def run(self):
         global myQueue
-        print "queueuFiller: started in thread %s." % self.ident
+        print("queueuFiller: started in thread %s." % self.ident)
         while True:
             myData = 'data: {"X": %s, "Y": %s}\n' % (int(time.time()) * 1000, random.random())
             SseHTTPServer.SseHTTPRequestHandler.event_queue.put({"event": "addpoint", "data": myData})
@@ -113,14 +113,14 @@ USAGE
             SseHTTPServer.SseHTTPRequestHandler.event_queue.put(message)
 
         Handler = SseHTTPServer.SseHTTPRequestHandler
-        httpd = SocketServer.ThreadingTCPServer(("127.0.0.1", port), Handler)
+        httpd = socketserver.ThreadingTCPServer(("127.0.0.1", port), Handler)
         httpd.serve_forever()
 
         return 0
     except KeyboardInterrupt:
         ### handle keyboard interrupt ###
         return 0
-    except Exception, e:
+    except Exception as e:
         if DEBUG or TESTRUN:
             raise(e)
         indent = len(program_name) * " "
