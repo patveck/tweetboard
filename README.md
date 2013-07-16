@@ -1,5 +1,5 @@
-TweetBoard - Twitter Dashboard for "Pearls of Computer Science"
-===============================================================
+TweetBoard - Twitter Dashboard for "Pearls of Computer Science" [![Build Status](https://travis-ci.org/patveck/tweetboard.png)](https://travis-ci.org/patveck/tweetboard)
+---------------------------------------------------------------
 
 Starting September 2013, the [University of Twente](http://utwente.nl/en/) gradually introduces [project-based learning](http://en.wikipedia.org/wiki/Project-based_learning) in all bachelor-level courses. Moreover, for the first course, a university-wide theme has been chosen: sports. The [Computer Science bachelor program](http://www.utwente.nl/bachelor/inf/) of University of Twente has chosen to focus on creating a Twitter monitoring dashboard for various stakeholders in the [Batavierenrace](http://en.wikipedia.org/wiki/Batavierenrace), a 185-km student relay race in which over 8000 runners participate.
 
