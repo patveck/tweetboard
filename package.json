@@ -3,13 +3,19 @@
   "version": "0.1.0",
   "description": "Infrastructure for course INF M1.1 of University of Twente.",
   "main": "index.html",
+  "repository": { 
+    "type" : "git",
+    "url" : "http://github.com/patveck/tweetboard.git"
+  },
   "directories": {
     "test": "tests"
   },
-  "scripts": {
-    "test": "karma start karma.conf.js"
+  "devDependencies": {
+    "karma": "~0.8"
   },
-  "repository": "",
+  "scripts": {
+    "test": "./node_modules/.bin/karma start --single-run --browsers PhantomJS"
+  },
   "keywords": [
     "Twitter",
     "dashboard"
