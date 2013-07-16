@@ -18,6 +18,7 @@ import http.server
 import threading
 import sys
 import logging
+import io
 
 
 class SseHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
@@ -36,6 +37,13 @@ class SseHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         self.logger = logging.getLogger(__name__)
         self.logger.info("SseHTTPRequestHandler(Thread-%s): setup() called", threading.current_thread().ident)
         http.server.SimpleHTTPRequestHandler.setup(self)
+
+    def finish(self):
+        self.logger.info("SseHTTPRequestHandler(Thread-%s): finish() called", threading.current_thread().ident)
+        if type(self.wfile) == io.BytesIO:
+            self.response_value = self.wfile.getvalue()
+            self.logger.debug("SseHTTPRequestHandler: response is %s", str(self.response_value))
+        http.server.SimpleHTTPRequestHandler.finish(self)
 
     def do_GET(self):
         """Serve a GET request. If and only if the request is for path eventsource_path (by default: /events),
@@ -70,13 +78,15 @@ class SseHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             try:
                 if self.wfile.closed:
                     raise RuntimeError("Response object closed.")
-                self.wfile.write(("id: %s\n" % _message_number).encode('UTF-8', 'replace'))
                 _message_contents = self._event_queue.get()
-                self.wfile.write(("event: %s\n" % _message_contents["event"]).encode('UTF-8', 'replace'))
+                self.wfile.write(("id: %s\r\n" % _message_number).encode('UTF-8', 'replace'))
+                self.wfile.write(("event: %s\r\n" % _message_contents["event"]).encode('UTF-8', 'replace'))
                 for _line in _message_contents["data"]:
-                    self.wfile.write(("data: %s\n" % _line).encode('UTF-8', 'replace'))
-                self.wfile.write(b"\n")
+                    self.wfile.write(("data: %s\r\n" % _line).encode('UTF-8', 'replace'))
+                self.wfile.write(b"\r\n")
                 self.wfile.flush()
+                if _message_contents["event"] == "terminate":
+                    _stop = True
             except IOError as e:
                 logging.error("_SseSender(Thread-{0}): I/O error({1}): {2}".format(threading.current_thread().ident, e.errno, e.strerror))
                 if e.errno == 10053:
