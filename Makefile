@@ -1,7 +1,6 @@
 
 test:
-	-python travistest.py
-	-wget http://hg.python.org/cpython/raw-file/d047928ae3f6/Lib/test/mock_socket.py
-	-node -v
-	-npm version
+	-ls -l /home/travis/virtualenv/python3.3/lib/python3.3
+	-ls -l /usr/lib/python3.3
 	nosetests
+	npm test
