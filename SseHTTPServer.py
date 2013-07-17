@@ -51,40 +51,36 @@ class SseHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         SimpleHTTPServer from the Python standard library.
         """
         if self.path == SseHTTPRequestHandler.eventsource_path:
-            self.send_events()
+            self._start_event_stream()
         else:
             http.server.SimpleHTTPRequestHandler.do_GET(self)
 
-    def send_events(self):
-        """Common code for GET and HEAD commands.
+    def _start_event_stream(self):
 
-               This sends the response code and MIME headers.
-
-        """
-
+        # Register with an event queue, which will be used as event source:
         if SseHTTPRequestHandler.event_queue_factory is None:
             self.logger.critical("SseHTTPRequestHandler(Thread-%s): event_queue_factory not set", threading.current_thread().ident)
             exit()
-
         self._event_queue = SseHTTPRequestHandler.event_queue_factory("Thread-%s" % threading.current_thread().ident)
         logging.info("SseHTTPRequestHandler(Thread-%s): registered queue, start sending events", threading.current_thread().ident)
+
+        # Send HTTP headers:
         self.send_response(200)
         self.send_header("Content-type", "text/event-stream")
         self.end_headers()
+
+        # Start event serving loop:
+        self._send_events()
+
+    def _send_events(self):
         _message_number = 0
         _stop = False
         while not _stop:
             _message_number += 1
             try:
-                if self.wfile.closed:
-                    raise RuntimeError("Response object closed.")
                 _message_contents = self._event_queue.get()
-                self.wfile.write(("id: %s\r\n" % _message_number).encode('UTF-8', 'replace'))
-                self.wfile.write(("event: %s\r\n" % _message_contents["event"]).encode('UTF-8', 'replace'))
-                for _line in _message_contents["data"]:
-                    self.wfile.write(("data: %s\r\n" % _line).encode('UTF-8', 'replace'))
-                self.wfile.write(b"\r\n")
-                self.wfile.flush()
+                if self._check_message(_message_contents):
+                    self._send_message(_message_contents, _message_number)
                 if _message_contents["event"] == "terminate":
                     _stop = True
             except IOError as e:
@@ -94,9 +90,27 @@ class SseHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             except:
                 logging.error("_SseSender: Unexpected error:", sys.exc_info()[0])
 
+    def _check_message(self, _message_contents):
+        if not "event" in _message_contents:
+            logging.error("Message dict has no event key.")
+            return False
+        if not "data" in _message_contents:
+            logging.error("Message dict has no data key.")
+            return False
+        return True
 
-def test(HandlerClass=SseHTTPRequestHandler,
-         ServerClass=http.server.HTTPServer):
+    def _send_message(self, _message_contents, _message_number):
+        if self.wfile.closed:
+            raise RuntimeError("Response object closed.")
+        self.wfile.write(("id: %s\r\n" % _message_number).encode('UTF-8', 'replace'))
+        self.wfile.write(("event: %s\r\n" % _message_contents["event"]).encode('UTF-8', 'replace'))
+        for _line in _message_contents["data"]:
+            self.wfile.write(("data: %s\r\n" % _line).encode('UTF-8', 'replace'))
+        self.wfile.write(b"\r\n")
+        self.wfile.flush()
+
+
+def test(HandlerClass=SseHTTPRequestHandler, ServerClass=http.server.HTTPServer):
     http.server.test(HandlerClass, ServerClass)
 
 

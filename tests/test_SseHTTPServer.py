@@ -5,15 +5,13 @@ because the great-great-grandfather of this class does a lot of work in its cons
 great-great grandfather already calls nearly all units of SseHTTPRequestHandler as part of its
 constructor, while ideally one would like to test those units one by one.
 
-
-
 Created on 11 jul. 2013
 
 @author: Pascal van Eck
 """
 
 import unittest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 import test.mock_socket
 import SseHTTPServer
 import queue
@@ -59,8 +57,6 @@ class Test(unittest.TestCase):
         logging.basicConfig(level=logging.DEBUG)
         self.server = MagicMock(name="server")
         self.test_queue = queue.Queue()
-        self.test_queue.put({"event": "test", "data": ["Line 1 of first message.", "Line 2 of first message."]})
-        self.test_queue.put({"event": "terminate", "data": ["End of event stream."]})
         SseHTTPServer.SseHTTPRequestHandler.event_queue_factory = self.subscribe
 
     def subscribe(self, listener_id):
@@ -73,13 +69,13 @@ class Test(unittest.TestCase):
     def test_serveIndex(self):
         MyMockSocket._reply_data = [b"GET / HTTP/1.1", b"Host: localhost:7737", b""]
         request = MyMockSocket()
-        self.handler = SseHTTPServer.SseHTTPRequestHandler(request, ("127.0.0.1", "7737"), self.server)
-        self.response_string = str(self.handler.response_value, "utf-8")
-        self.assertRegex(self.response_string, "^HTTP/1.0 200 OK", "Response should start with HTTP/1.0 200 OK.")
-        self.assertRegex(self.response_string, "Content-type: text/html", "Response should contain proper content-type")
-        self.assertRegex(self.response_string, "<title>Pascal", "Response should contain <title>Pascal.")
+        with patch("http.server.SimpleHTTPRequestHandler.do_GET") as mocked_SimpleHTTPRequestHandler_do_GET:
+            self.handler = SseHTTPServer.SseHTTPRequestHandler(request, ("127.0.0.1", "7737"), self.server)
+            mocked_SimpleHTTPRequestHandler_do_GET.assert_called_once_with(self.handler)
 
     def test_serveEvents(self):
+        self.test_queue.put({"event": "test", "data": ["Line 1 of first message.", "Line 2 of first message."]})
+        self.test_queue.put({"event": "terminate", "data": ["End of event stream."]})
         MyMockSocket._reply_data = [b"GET /events HTTP/1.1", b"Host: localhost:7737", b""]
         request = MyMockSocket()
         self.handler = SseHTTPServer.SseHTTPRequestHandler(request, ("127.0.0.1", "7737"), self.server)
@@ -89,7 +85,29 @@ class Test(unittest.TestCase):
         self.assertRegex(self.response_string, "id: 1\\r\\nevent: test\\r\\ndata: Line 1 of first message\.\\r\\ndata: Line 2 of first message\.", "Response should contain first message.")
         self.assertRegex(self.response_string, "id: 2\\r\\nevent: terminate\\r\\ndata: End of event stream\.", "Response should contain terminate message.")
 
+    def test_validMessage(self):
+        self.test_queue.put({"event": "terminate", "data": ["End of event stream."]})
+        MyMockSocket._reply_data = [b"GET /events HTTP/1.1", b"Host: localhost:7737", b""]
+        request = MyMockSocket()
+        self.handler = SseHTTPServer.SseHTTPRequestHandler(request, ("127.0.0.1", "7737"), self.server)
+        _message = {"event": "test", "data": ["Line 1 of first message.", "Line 2 of first message."]}
+        self.assertTrue(self.handler._check_message(_message), "Valid message, so should have returned True.")
+
+    def test_invalidMessageNoEvent(self):
+        self.test_queue.put({"event": "terminate", "data": ["End of event stream."]})
+        MyMockSocket._reply_data = [b"GET /events HTTP/1.1", b"Host: localhost:7737", b""]
+        request = MyMockSocket()
+        self.handler = SseHTTPServer.SseHTTPRequestHandler(request, ("127.0.0.1", "7737"), self.server)
+        _message = {"data": ["Line 1 of first message.", "Line 2 of first message."]}
+        self.assertFalse(self.handler._check_message(_message), "Message dict has no event key.")
+
+    def test_invalidMessageNoData(self):
+        self.test_queue.put({"event": "terminate", "data": ["End of event stream."]})
+        MyMockSocket._reply_data = [b"GET /events HTTP/1.1", b"Host: localhost:7737", b""]
+        request = MyMockSocket()
+        self.handler = SseHTTPServer.SseHTTPRequestHandler(request, ("127.0.0.1", "7737"), self.server)
+        _message = {"event": "test"}
+        self.assertFalse(self.handler._check_message(_message), "Message dict has no data key.")
 
 if __name__ == "__main__":
-    #import sys;sys.argv = ['', 'Test.testName']
     unittest.main()
