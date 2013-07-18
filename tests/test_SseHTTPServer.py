@@ -109,5 +109,68 @@ class Test(unittest.TestCase):
         _message = {"event": "test"}
         self.assertFalse(self.handler._check_message(_message), "Message dict has no data key.")
 
+    def test_invalidMessageEventWrongType(self):
+        self.test_queue.put({"event": "terminate", "data": ["End of event stream."]})
+        MyMockSocket._reply_data = [b"GET /events HTTP/1.1", b"Host: localhost:7737", b""]
+        request = MyMockSocket()
+        self.handler = SseHTTPServer.SseHTTPRequestHandler(request, ("127.0.0.1", "7737"), self.server)
+        _message = {"event": 123, "data": ["I am event 123."]}
+        self.assertFalse(self.handler._check_message(_message), "Message event is wrong type.")
+
+    def test_invalidMessageEmptyEvent(self):
+        self.test_queue.put({"event": "terminate", "data": ["End of event stream."]})
+        MyMockSocket._reply_data = [b"GET /events HTTP/1.1", b"Host: localhost:7737", b""]
+        request = MyMockSocket()
+        self.handler = SseHTTPServer.SseHTTPRequestHandler(request, ("127.0.0.1", "7737"), self.server)
+        _message = {"event": "", "data": ["I am an empty event type."]}
+        self.assertFalse(self.handler._check_message(_message), "Message event is empty string.")
+
+    def test_invalidMessageDataWrongType(self):
+        self.test_queue.put({"event": "terminate", "data": ["End of event stream."]})
+        MyMockSocket._reply_data = [b"GET /events HTTP/1.1", b"Host: localhost:7737", b""]
+        request = MyMockSocket()
+        self.handler = SseHTTPServer.SseHTTPRequestHandler(request, ("127.0.0.1", "7737"), self.server)
+        _message = {"event": "test", "data": "I am just a string."}
+        self.assertFalse(self.handler._check_message(_message), "Message data is not a list.")
+
+    def test_invalidMessageEmptyData(self):
+        self.test_queue.put({"event": "terminate", "data": ["End of event stream."]})
+        MyMockSocket._reply_data = [b"GET /events HTTP/1.1", b"Host: localhost:7737", b""]
+        request = MyMockSocket()
+        self.handler = SseHTTPServer.SseHTTPRequestHandler(request, ("127.0.0.1", "7737"), self.server)
+        _message = {"event": "test", "data": []}
+        self.assertFalse(self.handler._check_message(_message), "Message data is empty list.")
+
+    def test_send_message1(self):
+        self.test_queue.put({"event": "terminate", "data": ["End of event stream."]})
+        MyMockSocket._reply_data = [b"GET /events HTTP/1.1", b"Host: localhost:7737", b""]
+        request = MyMockSocket()
+        self.handler = SseHTTPServer.SseHTTPRequestHandler(request, ("127.0.0.1", "7737"), self.server)
+        self.handler.wfile = io.BytesIO()
+        self.handler._send_message({"event": "test", "data": ["Line 1."]}, 123)
+        self.response_string = str(self.handler.wfile.getvalue(), "utf-8")
+        self.assertEqual(self.response_string, "id: 123\r\nevent: test\r\ndata: Line 1.\r\n\r\n", "String representation of message not correct.")
+
+    def test_send_message2(self):
+        self.test_queue.put({"event": "terminate", "data": ["End of event stream."]})
+        MyMockSocket._reply_data = [b"GET /events HTTP/1.1", b"Host: localhost:7737", b""]
+        request = MyMockSocket()
+        self.handler = SseHTTPServer.SseHTTPRequestHandler(request, ("127.0.0.1", "7737"), self.server)
+        self.handler.wfile = io.BytesIO()
+        self.handler._send_message({"event": "test", "data": ["", ""]}, 123)
+        self.response_string = str(self.handler.wfile.getvalue(), "utf-8")
+        self.assertEqual(self.response_string, "id: 123\r\nevent: test\r\ndata: \r\ndata: \r\n\r\n", "String representation of message not correct.")
+
+    def test_eventloop(self):
+        self.test_queue.put({"event": "terminate", "data": ["End of event stream."]})
+        MyMockSocket._reply_data = [b"GET /events HTTP/1.1", b"Host: localhost:7737", b""]
+        request = MyMockSocket()
+        self.handler = SseHTTPServer.SseHTTPRequestHandler(request, ("127.0.0.1", "7737"), self.server)
+        self.handler._check_message = MagicMock(return_value=True)
+        self.handler._send_message = MagicMock()
+        self.test_queue.put({"event": "terminate", "data": ["End of event stream."]})
+        self.handler._send_events()
+        self.handler._send_message.assert_called_once_with({"event": "terminate", "data": ["End of event stream."]}, 1)
+
 if __name__ == "__main__":
     unittest.main()

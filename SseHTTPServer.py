@@ -97,6 +97,18 @@ class SseHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         if not "data" in _message_contents:
             logging.error("Message dict has no data key.")
             return False
+        if not type(_message_contents["event"]) == str:
+            logging.error("Message event is not a string.")
+            return False
+        if len(_message_contents["event"]) == 0:
+            logging.error("Message event cannot be empty.")
+            return False
+        if not type(_message_contents["data"]) == list:
+            logging.error("Message data is not a list.")
+            return False
+        if len(_message_contents["data"]) == 0:
+            logging.error("Message data cannot be empty list.")
+            return False
         return True
 
     def _send_message(self, _message_contents, _message_number):

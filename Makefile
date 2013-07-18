@@ -5,7 +5,7 @@ test:
 # make Python recognize this directory.
 ifeq ($(TRAVIS),true)
 	wget -x -nH --cut-dirs=4 http://hg.python.org/cpython/raw-file/d047928ae3f6/Lib/test/mock_socket.py
-	touch __init__.py
+	touch test/__init__.py
 endif
 	# Run server tests (the Python code):
 	nosetests
