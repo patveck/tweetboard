@@ -1,4 +1,4 @@
-#!/usr/local/bin/python2.7
+#!/usr/bin/env python3
 # encoding: utf-8
 '''
 sseserver -- Python script that serves server-sent events
@@ -17,14 +17,8 @@ sseserver is a description
 
 import sys
 import os
-import SseHTTPServer
-import socketserver
+import tweetprocessor
 import logging
-import queue
-import threading
-import time
-import random
-
 from argparse import ArgumentParser, FileType
 from argparse import RawDescriptionHelpFormatter
 
@@ -50,31 +44,6 @@ class CLIError(Exception):
 
     def __unicode__(self):
         return self.msg
-
-
-myQueue = [{"event": "test", "data": ["Line 1 of first message.", "Line 2 of first message."]},
-           {"event": "test", "data": ["Line 1 of second message.", "Line 2 of second message."]}
-          ]
-
-
-class queueFiller(threading.Thread):
-    def run(self):
-        global myQueue, listeners
-        print("queueuFiller: started in thread %s." % self.ident)
-        while True:
-            myData = '{"X": %s, "Y": %s}\n' % (int(time.time()) * 1000, random.random())
-            for _i in listeners:
-                listeners[_i].put({"event": "addpoint", "data": [myData]})
-            time.sleep(1)
-
-listeners = {}
-
-
-def subscribe(listener_id):
-    global listeners
-    _new_queue = queue.Queue()
-    listeners[listener_id] = _new_queue
-    return _new_queue
 
 
 def main(argv=None):
@@ -124,18 +93,7 @@ USAGE
         if verbose > 0:
             logging.info("sseserver.py: Serving contents of %s via port %s.", infile.name, port)
 
-        SseHTTPServer.SseHTTPRequestHandler.event_queue_factory = subscribe
-
-        for message in myQueue:
-            for _i in listeners:
-                listeners[_i].put(message)
-
-        myQueueFiller = queueFiller()
-        myQueueFiller.start()
-
-        Handler = SseHTTPServer.SseHTTPRequestHandler
-        httpd = socketserver.ThreadingTCPServer(("127.0.0.1", port), Handler)
-        httpd.serve_forever()
+        tweetprocessor.process_tweets(infile, port)
 
         return 0
     except KeyboardInterrupt:

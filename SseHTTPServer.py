@@ -15,6 +15,7 @@ Created on 31 mei 2013
 __version__ = "0.1"
 
 import http.server
+import socketserver
 import threading
 import sys
 import logging
@@ -24,6 +25,15 @@ import io
 class SseHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 
     """HTTP GET request handler that serves a stream of event messages according to the SSE W3C recommendation.
+
+    The only dependency that is not in the Python Standard Library is injected via a class variable
+    called event_queue_factory.
+
+    As per the structure of the http.server framework in the Python Standard Library, this class is not
+    instantiated directly by application scripts. Instead, application scripts instantiate socketserver.TCPserver,
+    providing this class (not an instance of this class) as an argument to the constructor of
+    socketserver.TCPserver. TCPserver (actually, one of its ancessors) in turn instantiates this class once
+    for every incoming connection.
 
     """
 
@@ -122,7 +132,7 @@ class SseHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         self.wfile.flush()
 
 
-def test(HandlerClass=SseHTTPRequestHandler, ServerClass=http.server.HTTPServer):
+def test(HandlerClass=SseHTTPRequestHandler, ServerClass=socketserver.ThreadingTCPServer):
     http.server.test(HandlerClass, ServerClass)
 
 
