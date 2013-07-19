@@ -57,7 +57,8 @@ def main(argv=None):
     program_name = os.path.basename(sys.argv[0])
     program_version = "v%s" % __version__
     program_build_date = str(__updated__)
-    program_version_message = '%%(prog)s %s (%s)' % (program_version, program_build_date)
+    program_version_message = '%%(prog)s %s (%s)' % (program_version,
+                                                     program_build_date)
     program_shortdesc = __import__('__main__').__doc__.split("\n")[1]
     program_license = '''%s
 
@@ -75,11 +76,18 @@ USAGE
 
     try:
         # Setup argument parser
-        parser = ArgumentParser(description=program_license, formatter_class=RawDescriptionHelpFormatter)
-        parser.add_argument("-v", "--verbose", action="count", help="set verbosity level [default: %(default)s]")
-        parser.add_argument("-V", "--version", action="version", version=program_version_message)
-        parser.add_argument("-p", "--port", type=int, default=7737, metavar="N", help="set port to listen on [default: %(default)s]")
-        parser.add_argument("infile", nargs="?", type=FileType("r"), default=sys.stdin, help="file containing event messages [default: %(default)s]")
+        parser = ArgumentParser(description=program_license,
+                                formatter_class=RawDescriptionHelpFormatter)
+        parser.add_argument("-v", "--verbose", action="count",
+                            help="set verbosity level [default: %(default)s]")
+        parser.add_argument("-V", "--version", action="version",
+                            version=program_version_message)
+        parser.add_argument("-p", "--port", type=int, default=7737,
+                            metavar="N", help="set port to listen on "
+                            "[default: %(default)s]")
+        parser.add_argument("infile", nargs="?", type=FileType("r"),
+                            default=sys.stdin, help="file containing event "
+                            "messages [default: %(default)s]")
 
         # Process arguments
         args = parser.parse_args()
@@ -91,7 +99,8 @@ USAGE
         logging.info("Verbosity level %s.", verbose)
 
         if verbose > 0:
-            logging.info("sseserver.py: Serving contents of %s via port %s.", infile.name, port)
+            logging.info("sseserver.py: Serving contents of %s via port %s.",
+                         infile.name, port)
 
         tweetprocessor.process_tweets(infile, port)
 
@@ -99,11 +108,11 @@ USAGE
     except KeyboardInterrupt:
         ### handle keyboard interrupt ###
         return 0
-    except Exception as e:
+    except Exception as ex:
         if DEBUG or TESTRUN:
-            raise(e)
+            raise(ex)
         indent = len(program_name) * " "
-        sys.stderr.write(program_name + ": " + repr(e) + "\n")
+        sys.stderr.write(program_name + ": " + repr(ex) + "\n")
         sys.stderr.write(indent + "  for help use --help")
         return 2
 
@@ -117,12 +126,12 @@ if __name__ == "__main__":
     if PROFILE:
         import cProfile
         import pstats
-        profile_filename = 'sseserver_profile.txt'
-        cProfile.run('main()', profile_filename)
-        statsfile = open("profile_stats.txt", "wb")
-        p = pstats.Stats(profile_filename, stream=statsfile)
-        stats = p.strip_dirs().sort_stats('cumulative')
-        stats.print_stats()
-        statsfile.close()
+        PROFILE_FILENAME = 'sseserver_profile.txt'
+        cProfile.run('main()', PROFILE_FILENAME)
+        STATSFILE = open("profile_stats.txt", "wb")
+        P = pstats.Stats(PROFILE_FILENAME, stream=STATSFILE)
+        STATS = P.strip_dirs().sort_stats('cumulative')
+        STATS.print_stats()
+        STATSFILE.close()
         sys.exit(0)
     sys.exit(main())
