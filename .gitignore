@@ -1,2 +1,5 @@
+*~
 *.pyc
 *.md.html
+.coverage
+node_modules/
