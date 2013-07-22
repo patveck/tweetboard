@@ -10,6 +10,7 @@ import threading
 import socketserver
 import time
 import random
+import actions
 
 
 def process_tweets(infile, port):
@@ -67,13 +68,32 @@ class QueueFiller(threading.Thread):
     them. Maybe the standard library allows to just run a function in a thread.
     """
 
+    chart_options = {"title": {"text": "Browser market shares"},
+                     "series": [{"type": "pie",
+                                 "name": "Browser share",
+                                        "data": [["Firefox", 45.0],
+                                                 ["IE", 26.8],
+                                                 ["Chrome", 12.8],
+                                                 ["Safari", 8.5],
+                                                 ["Opera", 6.2],
+                                                 ["Others", 0.7]
+                                                 ]}]}
+
+    def _send_to_all_listeners(self, message):
+        for count in LISTENERS:
+            LISTENERS[count].put(message)
+
     def run(self):
         print("queueuFiller: started in thread %s." % self.ident)
+        self._send_to_all_listeners(actions.message("queueuFiller: started in "
+                                                    "server thread %s." %
+                                                    self.ident))
+        self._send_to_all_listeners(actions.create_general_chart("chart1",
+                                                        self.chart_options))
         while True:
-            my_data = '{"X": %s, "Y": %s}\n' % (int(time.time()) * 1000,
-                                                random.random())
-            for count in LISTENERS:
-                LISTENERS[count].put({"event": "addpoint", "data": [my_data]})
+            self._send_to_all_listeners(actions.add_point("mychart",
+                                                    int(time.time()) * 1000,
+                                                    random.random()))
             time.sleep(1)
 
 
