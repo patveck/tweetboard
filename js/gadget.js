@@ -12,34 +12,30 @@ define(["jquery", "hcharts"], function($, hc) {
 		theGadget.append(theTitle);
 		theGadget.append(theContents);
 		this.append(theGadget);
-		return this;
 	};
 	
-	$.fn.addChartGadget = function(options) {
-		var theChart = $('<div> style="width:100%; height:400px;"').highcharts(options.chartConfig);
-		options.contents = theChart;
+	$.fn.addChartGadget = function(options, ref) {
+		options.callback = function(sel) {
+            return $('<div> style="width:100%; height:400px;"').attr("id", options.id+"Div");
+		};
 		this.addGadget(options);
-		return this;
+		return new hc.Chart(options.chartConfig);
 	};
 	
 	$.fn.addMessageGadget = function(options) {
 		options.callback = function(sel) {
-			var theTextarea = $('<textarea rows="20" width="100%">');
-			var theButton = $("<button>").click(function() {});
-			sel.append($('<textarea id="txUpdateWidgetText"placeholder="HighCharts options object in JSON notation."></textarea>'));
-			sel.append($('<br>'));
-			sel.append($)
+			return $('<textarea id="txUpdateWidgetText"placeholder="HighCharts options object in JSON notation."></textarea>').append($('<br>')).append($('<button id="btUpdateWidgetButton" type="button">Update</button>'));
 		};
-		options.contents = '<button id="btUpdateWidgetButton" type="button">Update</button>';
 		this.addGadget(options);
-		
-		return this;
 	};
 	
-	$.fn.addMonitorGadget = function(options) {
-		options.contents = '<textarea id="txMessages" rows="20" width="100%"></textarea>';
+	$.fn.addMonitorGadget = function(options, ref) {
+        options.callback = function(sel) {
+            var theTextArea = $('<textarea id="txMessages" rows="20" width="100%"></textarea>');
+            ref.monitors[options.id] = theTextArea;
+            return theTextArea;
+        };
 		this.addGadget(options);
-		return this;
 	};
 	
 });

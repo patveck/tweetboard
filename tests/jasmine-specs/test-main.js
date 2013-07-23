@@ -1,5 +1,6 @@
 var tests = Object.keys(window.__karma__.files).filter(function (file) {
-      return /Spec\.js$/.test(file);
+    "use strict";
+      return (/Spec\.js$/).test(file);
 });
 
 requirejs.config({
@@ -12,10 +13,10 @@ requirejs.config({
     },
 
     shim: {
-	"hcharts": {
-	    "deps": ["jquery"],
-	    "exports": "Highcharts"
-	}
+        "hcharts": {
+            "deps": ["jquery"],
+            "exports": "Highcharts"
+                }
     },
 
     // ask Require.js to load these files (all our tests)

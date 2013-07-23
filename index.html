@@ -12,6 +12,11 @@
     	requirejs(["main"], function(main) {
 			$(function () {
 				main.run();
+				$('#btUpdateWidgetButton').click(function() {
+	                console.log("Button btUpdateWidgetButton clicked.");
+	                var theText = $('#txUpdateWidgetText').val();
+				    main.updateWidget(theText);
+				});
 			});
     	});
     </script>
