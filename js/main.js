@@ -1,119 +1,200 @@
 /**
- * @module main 
+ * @author patveck
  */
 
-define(["jquery", "hcharts", "highcharts_uttheme", "jasmine-html"], function($, hc, hct, jasmine) {
-	"use strict";
+define(["jquery", "hcharts", "highcharts_uttheme", "jasmine-html"],
+    function($, hc, hct, jasmine) {
+        "use strict";
 
-	return {
-		source: null,
-		chart1: new hc.Chart({
-			chart: {
-				type: 'spline',
-				renderTo: 'chart1',
-				animation: Highcharts.svg
-			},
-			title: {
-				text: 'Live random data'
-			},
-			xAxis: {
-				type: 'datetime',
-				tickPixelInterval: 150
-			},
-			yAxis: {
-				title: {
-					text: 'Value'
-				},
-				plotLines: [{
-					value: 0,
-					width: 1,
-					color: '#808080'
-				}]
-			},
-			series: [{
-				name: 'Random data',
-				data: (function() {
-					// generate an array of random data
-					var data = [],
-					time = (new Date()).getTime(),
-					i;
+        /** @exports main */
+        var main = {
+            tmp: {
+                chart: {
+                    type: "spline",
+                    animation: Highcharts.svg
+                },
+                title: {text: "Live random data"
+                },
+                xAxis: {
+                    type: "datetime",
+                    tickPixelInterval: 150
+                },
+                yAxis: {
+                    title: {text: "Value"
+                    },
+                    plotLines: [{
+                        value: 0,
+                        width: 1,
+                        color: "#808080"
+                    }]
+                },
+                series: [{
+                    name: "Random data",
+                    data: (function() {
+                        // generate an array of random data
+                        var data = [], time = (new Date()).getTime(), i;
 
-					for (i = -19; i <= 0; i++) {
-						data.push({
-							x: time + i * 1000,
-							y: Math.random()
-						});
-					}
-					return data;
-				})()
-			}]
-		}),
-		
-		highchartsOptions: hc.setOptions(hct), // Apply the theme 
+                        for (i = -19; i <= 0; i++) {
+                            data.push({
+                                x: time + i * 1000,
+                                y: Math.random()
+                            });
+                        }
+                        return data;
+                    })()
+                }]
+            },
 
-		jasmineEnv: jasmine.getEnv(),
-		htmlReporter: new jasmine.HtmlReporter(),
+            /* The ViewModel: */
+            source: null,
+            chartViews: [],
+            monitorView: null,
+            messageView: null,
 
-		run: function() {
-			this.jasmineEnv.updateInterval = 1000;			
-			this.jasmineEnv.addReporter(this.htmlReporter);
-			this.jasmineEnv.specFilter = $.proxy(function(spec) {
-				return this.htmlReporter.specFilter(spec);
-			}, this);
-			$('#btRunJasmineTests').click(function() {
-				require(["jasmine-html", "jasmine-specs/UTThemeSpec"], function(jasmine, spec) { 
-					jasmine.getEnv().execute(); });
-			});
-			$('#btUpdateWidgetButton').click(function() {
-				console.log("Button btUpdateWidgetButton clicked");
-				var newOptions = '';
-				var theText = $('#txUpdateWidgetText').val();
-				try {
-					newOptions = $.parseJSON(theText);
-				} catch(e) {
-					alert("parseJSON() raised exception: " + e.toString() + ".");
-				}
-				this.chart1.destroy();
-				try {
-					this.chart1 = new Highcharts.Chart(newOptions);
-				} catch(e) {
-					alert("HighCharts.Chart() raised exception: " + e.toString() + ".");
-				}
-			});
-			if (!!window.EventSource) {
-				this.source = new EventSource('events');
-			} else {
-				// Result to xhr polling :(
-			}
-			this.source.addEventListener('message', function(event) {
-				console.log("message event:" + event.data);
-				$('#txMessages').append("message event:" + event.data + "\n");
-			}, false);
-			this.source.addEventListener('addpoint', $.proxy(function(event) {
-				var newXY;
-				console.log("addpoint event:" + event.data);
-				$('#txMessages').append("addpoint event:" + event.data + "\n");
-				try {
-					newXY = $.parseJSON(event.data);
-				} catch(e) {
-					alert("parseJSON() raised exception: " + e.toString() + ".");
-				}
-				this.chart1.series[0].addPoint([newXY.X, newXY.Y], true, true);
-			}, this), false);    
-			this.source.addEventListener('open', function(event) {
-				console.log("EventSource connection opened.");
-				$('#txMessages').append("EventSource connection opened.\n");
-			}, false);
-			this.source.addEventListener('error', function(event) {
-				if (e.readyState == EventSource.CLOSED) {
-					console.log("EventSource connection closed.");
-					$('#txMessages').append("EventSource connection closed.\n");
-				} else {
-					console.log("EventSource error");
-					$('#txMessages').append("EventSource error.\n");
-				}
-			}, false);
+            highchartsOptions: hc.setOptions(hct), // Apply the theme
 
-		}
-	};
-});
+            jasmineEnv: jasmine.getEnv(),
+            htmlReporter: new jasmine.HtmlReporter(),
+
+            /** @method */
+            updateWidget: function(theText) {
+                console.log("Function updateWidget called: " + theText + ".");
+                var newOptions = "";
+                try {
+                    newOptions = $.parseJSON(theText);
+                } catch (e) {
+                    alert("parseJSON() raised exception: " +
+                        e.toString() + ".");
+                }
+                var storedDivId = this.chartViews.firstGraph.renderTo.id;
+                this.chartViews.firstGraph.destroy();
+                if (!("chart" in newOptions)) {
+                    newOptions.chart = {renderTo: storedDivId
+                    };
+                } else {
+                    newOptions.chart.renderTo = storedDivId;
+                }
+                try {
+                    this.chartViews.firstGraph = new Highcharts.Chart(
+                                    newOptions);
+                } catch (e) {
+                    alert("HighCharts.Chart() raised exception: " +
+                        e.toString() + ".");
+                }
+            },
+
+            createMonitor: function(destination) {
+                if (!this.monitor) {
+                    $(destination).addMonitorGadget({
+                        id: "monitorGadget",
+                        title: "Message monitor"
+                    }, function(theMonitor) {
+                        this.monitorView = theMonitor;
+                    }.bind(this));
+                }
+            },
+
+            createMessager: function(destination) {
+                if (!this.monitor) {
+                    $(destination).addMessageGadget(
+                        {
+                            id: "testGadget",
+                            title: "Local test gadget",
+                            placeholder:
+                                "HighCharts options object in JSON notation."
+                        },
+                        function(theMessage) {
+                            this.messageView = theMessage;
+                        }.bind(this),
+                        function() {
+                            console.log("Button of Messager clicked.");
+                            this.updateWidget(this.messageView.val());
+                        }.bind(this));
+                }
+            },
+
+            createChartGadget: function(destination) {
+                $(destination).addChartGadget({
+                    id: "firstGraph",
+                    title: "The first chart",
+                    chartConfig: this.tmp
+                }, function(theChart) {
+                    this.chartViews.firstGraph = theChart;
+                }.bind(this));
+            },
+
+            run: function() {
+                /* Initialize Jasmine JavaScript test runner: */
+                this.jasmineEnv.updateInterval = 1000;
+                this.jasmineEnv.addReporter(this.htmlReporter);
+                this.jasmineEnv.specFilter = function(spec) {
+                    return this.htmlReporter.specFilter(spec);
+                }.bind(this);
+                $("#btRunJasmineTests").click(
+                    function() {
+                        require([
+                            "jasmine-html", "jasmine-specs/UTThemeSpec",
+                            "jasmine-specs/gadgetSpec"], function() {
+                            jasmine.getEnv().execute();
+                        });
+                    });
+
+                this.createChartGadget("#cell1");
+                this.createMessager("#cell2");
+                this.createMonitor("#cell3");
+
+                /* Initialize eventsource component: */
+                this.source = new EventSource("events");
+                [
+                    "message", "addpoint", "open", "error"].forEach(
+                    function(eventType) {
+                        console.log("Initializing event type " + eventType +
+                            ".");
+                        this.initEventSource(eventType);
+                    }, this);
+            },
+
+            messageEventReceived: function(event) {
+                console.log("message event:" + event.data);
+                this.monitorView.append("message event:" + event.data + "\n");
+            },
+
+            addpointEventReceived: function(event) {
+                var newXY;
+                try {
+                    newXY = $.parseJSON(event.data);
+                } catch (e) {
+                    alert("parseJSON() raised exception: " +
+                        e.toString() + ".");
+                }
+                this.chartViews.firstGraph.series[0].addPoint([
+                    newXY.X, newXY.Y], true, true);
+            },
+
+            errorEventReceived: function(event) {
+                if (e.readyState == EventSource.CLOSED) {
+                    console.log("EventSource connection closed.");
+                    this.monitorView.append("EventSource connection closed.\n");
+                } else {
+                    console.log("EventSource error");
+                    this.monitorView.append("EventSource error.\n");
+                }
+            },
+
+            openEventReceived: function(event) {
+                console.log("EventSource connection opened.");
+                this.monitorView.append("EventSource connection opened.\n");
+            },
+
+            initEventSource: function(eventType) {
+                this.source.addEventListener(eventType, function(event) {
+                    var logMessage = "EventSource: message received, type is " +
+                        eventType + ", data is " + event.data + ".";
+                    console.log(logMessage);
+                    this.monitorView.append(logMessage + "\n");
+                    this[eventType + "EventReceived"].call(this, event);
+                }.bind(this), false);
+            }
+        };
+        return main;
+    });

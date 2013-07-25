@@ -1,6 +1,6 @@
-// TODO Add comment identifying this file.
-
 /**
+ * Settings for requirejs. Mainly needed to accommodate libraries (jquery, 
+ * jasmine, highcharts) that are not requirejs-compliant.
  * 
  */
 
