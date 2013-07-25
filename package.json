@@ -11,7 +11,12 @@
     "test": "tests"
   },
   "devDependencies": {
-    "karma": "~0.8"
+    "karma": "~0.8",
+    "grunt": "~0.4",
+    "grunt-contrib-jshint": "~0.6",
+    "grunt-contrib-watch": "~0.5",
+    "grunt-karma": "~0.4",
+    "grunt-jsdoc": "~0.4"
   },
   "scripts": {
     "test": "./node_modules/.bin/karma start --single-run --browsers PhantomJS"
