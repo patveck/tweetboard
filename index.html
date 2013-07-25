@@ -9,14 +9,9 @@
     <script type="text/javascript" src="lib/js/require.js"></script>
     <script type="text/javascript" src="js/requirejs-config.js"></script>
     <script type="text/javascript">
-    	requirejs(["main"], function(main) {
+    	requirejs(["main", "gadget"], function(main) {
 			$(function () {
 				main.run();
-				$('#btUpdateWidgetButton').click(function() {
-	                console.log("Button btUpdateWidgetButton clicked.");
-	                var theText = $('#txUpdateWidgetText').val();
-				    main.updateWidget(theText);
-				});
 			});
     	});
     </script>
