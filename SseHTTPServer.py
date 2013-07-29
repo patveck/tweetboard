@@ -90,7 +90,7 @@ class SseHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             exit()
         self._event_queue = SseHTTPRequestHandler.event_queue_factory(  # pylint: disable=E1102
                                 "Thread-%s" % threading.current_thread().ident)
-        logging.info("SseHTTPRequestHandler(Thread-%s): registered queue, "
+        self.logger.info("SseHTTPRequestHandler(Thread-%s): registered queue, "
                      "start sending events", threading.current_thread().ident)
 
         # Send HTTP headers:
@@ -110,25 +110,50 @@ class SseHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             _message_number += 1
             try:
                 _message_contents = self._event_queue.get()
-                if _check_message(_message_contents):
+                if self._check_message(_message_contents):
                     self._send_message(_message_contents, _message_number)
                 if _message_contents["event"] == "terminate":
                     _stop = True
             except IOError as ex:
-                logging.error("_SseSender(Thread-{0}): I/O error({1}): "
+                self.logger.error("_SseSender(Thread-{0}): I/O error({1}): "
                               "{2}".format(threading.current_thread().ident,
                                            ex.errno, ex.strerror))
                 if ex.errno == 10053:
                     _stop = True
             except:
-                logging.error("_SseSender(Thread-{0}): Unexpected error: "
+                self.logger.error("_SseSender(Thread-{0}): Unexpected error: "
                               "{1}".format(threading.current_thread().ident,
                                            sys.exc_info()[0]))
+
+    def _check_message(self, _message_contents):
+        """Check whether message complies with expected format."""
+        if not "event" in _message_contents:
+            self.logger.error("Message dict has no event key.")
+            return False
+        if not "data" in _message_contents:
+            self.logger.error("Message dict has no data key.")
+            return False
+        if not type(_message_contents["event"]) == str:
+            self.logger.error("Message event is not a string.")
+            return False
+        if len(_message_contents["event"]) == 0:
+            self.logger.error("Message event cannot be empty.")
+            return False
+        if not type(_message_contents["data"]) == list:
+            self.logger.error("Message data is not a list.")
+            return False
+        if len(_message_contents["data"]) == 0:
+            self.logger.error("Message data cannot be empty list.")
+            return False
+        return True
 
     def _send_message(self, _message_contents, _message_number):
         """Format message and send it by writing it to self.wfile."""
         if self.wfile.closed:
             raise RuntimeError("Response object closed.")
+        self.logger.debug("SseHTTPRequestHandler(Thread-%s): sending message "
+                     " %s: %s.", threading.current_thread().ident,
+                     _message_number, _message_contents)
         self.wfile.write(("id: %s\r\n" %
                           _message_number).encode('UTF-8', 'replace'))
         self.wfile.write(("event: %s\r\n" %
@@ -139,29 +164,6 @@ class SseHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                               _line).encode('UTF-8', 'replace'))
         self.wfile.write(b"\r\n")
         self.wfile.flush()
-
-
-def _check_message(_message_contents):
-    """Check whether message complies with expected format."""
-    if not "event" in _message_contents:
-        logging.error("Message dict has no event key.")
-        return False
-    if not "data" in _message_contents:
-        logging.error("Message dict has no data key.")
-        return False
-    if not type(_message_contents["event"]) == str:
-        logging.error("Message event is not a string.")
-        return False
-    if len(_message_contents["event"]) == 0:
-        logging.error("Message event cannot be empty.")
-        return False
-    if not type(_message_contents["data"]) == list:
-        logging.error("Message data is not a list.")
-        return False
-    if len(_message_contents["data"]) == 0:
-        logging.error("Message data cannot be empty list.")
-        return False
-    return True
 
 
 def test(handler_class=SseHTTPRequestHandler,
