@@ -76,6 +76,16 @@ class Test(unittest.TestCase):
                                               separators=(',', ':'))]},
                          "Message should be exactly like second arg.")
 
+    def test_buildinfo(self):
+        self.assertEqual(actions.send_buildinfo({"branch": "master",
+                                                 "commit": "084f7a45"}),
+                         {"event": "buildInfo",
+                          "data": [json.dumps({"branch": "master",
+                                              "commit": "084f7a45"},
+                                             sort_keys=True,
+                                             separators=(',', ':'))]},
+                         "Build info not properly converted.")
+
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.test_add_point']
     unittest.main()

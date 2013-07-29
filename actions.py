@@ -49,5 +49,11 @@ def create_general_chart(chart_id, chart_options):
                                  "chartOptions": chart_options})]}
 
 
+def send_buildinfo(buildinfo):
+    """Create message that informs client of its version information"""
+    return {"event": "buildInfo",
+            "data": [_serialize(buildinfo)]}
+
+
 if __name__ == '__main__':
     pass

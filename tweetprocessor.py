@@ -11,6 +11,7 @@ import socketserver
 import time
 import random
 import actions
+import buildinfo
 
 
 def process_tweets(infile, port):
@@ -50,24 +51,11 @@ MYQUEUE = [{"event": "test", "data": ["Line 1 of first message.",
                                       "Line 2 of second message."]}
           ]
 
+BUILDINFO = buildinfo.get_buildinfo(__file__)
+
 
 def subscribe(listener_id):
     """Event source factory for SseHTTPServer.SseHTTPRequestHandler."""
-    _new_queue = queue.Queue()
-    LISTENERS[listener_id] = _new_queue
-    return _new_queue
-
-LISTENERS = {}
-
-
-class QueueFiller(threading.Thread):
-
-    """Thread class that fills queue with heartbeat messages (one per second)
-
-    Module 1.1 in the INF program doesn't teach classes, so we try to avoid
-    them. Maybe the standard library allows to just run a function in a thread.
-    """
-
     chart_options = {"title": {"text": "Browser market shares"},
                      "series": [{"type": "pie",
                                  "name": "Browser share",
@@ -79,17 +67,37 @@ class QueueFiller(threading.Thread):
                                                  ["Others", 0.7]
                                                  ]}]}
 
+    _new_queue = queue.Queue()
+    _new_queue.put(actions.send_buildinfo(BUILDINFO))
+    _new_queue.put(actions.create_general_chart("chart1", chart_options))
+    LISTENERS[listener_id] = _new_queue
+    if not EVENT.is_set():
+        EVENT.set()
+    return _new_queue
+
+LISTENERS = {}
+
+EVENT = threading.Event()
+
+
+class QueueFiller(threading.Thread):
+
+    """Thread class that fills queue with heartbeat messages (one per second)
+
+    Module 1.1 in the INF program doesn't teach classes, so we try to avoid
+    them. Maybe the standard library allows to just run a function in a thread.
+    """
+
     def _send_to_all_listeners(self, message):
         for count in LISTENERS:
             LISTENERS[count].put(message)
 
     def run(self):
+        EVENT.wait()
         print("queueuFiller: started in thread %s." % self.ident)
         self._send_to_all_listeners(actions.message("queueuFiller: started in "
                                                     "server thread %s." %
                                                     self.ident))
-        self._send_to_all_listeners(actions.create_general_chart("chart1",
-                                                        self.chart_options))
         while True:
             self._send_to_all_listeners(actions.add_point("mychart",
                                                     int(time.time()) * 1000,
