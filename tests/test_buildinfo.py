@@ -26,9 +26,9 @@ def side_effect_success(path):
     else:
         if path == "/home/user/tweetboard/p1/p2/.git":
             return False
-        if path == "/home/usr/tweetboard/p1/.git":
+        if path == "/home/user/tweetboard/p1/.git":
             return False
-        if path == "/home/usr/tweetboard/.git":
+        if path == "/home/user/tweetboard/.git":
             return True
         raise ValueError
 
@@ -55,11 +55,11 @@ def side_effect_notfound(path):
     else:
         if path == "/home/user/tweetboard/p1/p2/.git":
             return False
-        if path == "/home/usr/tweetboard/p1/.git":
+        if path == "/home/user/tweetboard/p1/.git":
             return False
-        if path == "/home/usr/tweetboard/.git":
+        if path == "/home/user/tweetboard/.git":
             return False
-        if path == "/home/usr/.git":
+        if path == "/home/user/.git":
             return False
         if path == "/home/.git":
             return False
@@ -80,8 +80,10 @@ class Test(unittest.TestCase):
                          "This string is too short to be a valid SHA.")
 
     def test_get_git_directory_root(self):
-        self.assertRaises(IOError, buildinfo.get_git_directory, "/")
-        self.assertRaises(IOError, buildinfo.get_git_directory, "C:\\")
+        if platform.system() == "Windows":
+            self.assertRaises(IOError, buildinfo.get_git_directory, "C:\\")
+        else:
+            self.assertRaises(IOError, buildinfo.get_git_directory, "/")
 
     def test_get_git_directory_success(self):
         with patch("os.path.exists") as mock:
