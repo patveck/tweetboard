@@ -107,40 +107,37 @@ class Test(unittest.TestCase):
                          "stream\.",  # pylint: disable=W1401
                          "Response should contain terminate message.")  # pylint: disable=W1401
 
-    def test_valid_message(self):
+    def test_check_message(self):
+        self.test_queue.put({"event": "terminate",
+                             "data": ["End of event stream."]})
+        MyMockSocket._reply_data = [b"GET /events HTTP/1.1",
+                                    b"Host: localhost:7737", b""]
+        request = MyMockSocket()
+        handler = SseHTTPServer.SseHTTPRequestHandler(
+                      request, ("127.0.0.1", "7737"), self.server)
+        handler.wfile = io.BytesIO()
         _message = {"event": "test", "data": ["Line 1 of first message.",
                                               "Line 2 of first message."]}
-        self.assertTrue(SseHTTPServer._check_message(_message),
+        self.assertTrue(handler._check_message(_message),
                         "Valid message, so should have returned True.")
-
-    def test_invalid_messageNoEvent(self):
         _message = {"data": ["Line 1 of first message.",
                              "Line 2 of first message."]}
-        self.assertFalse(SseHTTPServer._check_message(_message), "Message dict has no event key.")
-
-    def test_invalidMessageNoData(self):
+        self.assertFalse(handler._check_message(_message),
+                         "Message dict has no event key.")
         _message = {"event": "test"}
-        self.assertFalse(SseHTTPServer._check_message(_message),
+        self.assertFalse(handler._check_message(_message),
                          "Message dict has no data key.")
-
-    def test_invalidMessageEventWrongType(self):
         _message = {"event": 123, "data": ["I am event 123."]}
-        self.assertFalse(SseHTTPServer._check_message(_message),
+        self.assertFalse(handler._check_message(_message),
                          "Message event is wrong type.")
-
-    def test_invalidMessageEmptyEvent(self):
         _message = {"event": "", "data": ["I am an empty event type."]}
-        self.assertFalse(SseHTTPServer._check_message(_message),
+        self.assertFalse(handler._check_message(_message),
                          "Message event is empty string.")
-
-    def test_invalidMessageDataWrongType(self):
         _message = {"event": "test", "data": "I am just a string."}
-        self.assertFalse(SseHTTPServer._check_message(_message),
+        self.assertFalse(handler._check_message(_message),
                          "Message data is not a list.")
-
-    def test_invalidMessageEmptyData(self):
         _message = {"event": "test", "data": []}
-        self.assertFalse(SseHTTPServer._check_message(_message),
+        self.assertFalse(handler._check_message(_message),
                          "Message data is empty list.")
 
     def test_send_message1(self):
@@ -182,7 +179,8 @@ class Test(unittest.TestCase):
         handler = SseHTTPServer.SseHTTPRequestHandler(request,
                                                       ("127.0.0.1", "7737"),
                                                       self.server)
-        with patch("SseHTTPServer._check_message", return_value=True):
+        with patch.object(SseHTTPServer.SseHTTPRequestHandler, "_check_message",  # @UndefinedVariable
+                          return_value=True):
             handler._send_message = MagicMock()
             self.test_queue.put({"event": "terminate",
                                  "data": ["End of event stream."]})

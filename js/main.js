@@ -146,32 +146,31 @@ define(["jquery", "hcharts", "highcharts_uttheme", "jasmine-html"],
                 /* Initialize eventsource component: */
                 this.source = new EventSource("events");
                 [
-                    "message", "addpoint", "open", "error"].forEach(
+                    "buildInfo", "message", "addpoint", "open",
+                    "error"].forEach(
                     function(eventType) {
                         console.log("Initializing event type " + eventType +
                             ".");
                         this.initEventSource(eventType);
                     }, this);
             },
-
-            messageEventReceived: function(event) {
-                console.log("message event:" + event.data);
-                this.monitorView.append("message event:" + event.data + "\n");
+            
+            buildInfoEventReceived: function(event, data) {
+                $("#buildinfo").append("This is tweetboard, branch " +
+                    data.branch + ", commit " + data.commit + ".<br>");
             },
 
-            addpointEventReceived: function(event) {
-                var newXY;
-                try {
-                    newXY = $.parseJSON(event.data);
-                } catch (e) {
-                    alert("parseJSON() raised exception: " +
-                        e.toString() + ".");
-                }
+            messageEventReceived: function(event, data) {
+                console.log("message event:" + data);
+                this.monitorView.append("message event:" + data + "\n");
+            },
+
+            addpointEventReceived: function(event, data) {
                 this.chartViews.firstGraph.series[0].addPoint([
-                    newXY.X, newXY.Y], true, true);
+                    data.X, data.Y], true, true);
             },
 
-            errorEventReceived: function(event) {
+            errorEventReceived: function(event, data) {
                 if (e.readyState == EventSource.CLOSED) {
                     console.log("EventSource connection closed.");
                     this.monitorView.append("EventSource connection closed.\n");
@@ -181,7 +180,7 @@ define(["jquery", "hcharts", "highcharts_uttheme", "jasmine-html"],
                 }
             },
 
-            openEventReceived: function(event) {
+            openEventReceived: function(event, data) {
                 console.log("EventSource connection opened.");
                 this.monitorView.append("EventSource connection opened.\n");
             },
@@ -192,7 +191,21 @@ define(["jquery", "hcharts", "highcharts_uttheme", "jasmine-html"],
                         eventType + ", data is " + event.data + ".";
                     console.log(logMessage);
                     this.monitorView.append(logMessage + "\n");
-                    this[eventType + "EventReceived"].call(this, event);
+                    var handlerName = eventType + "EventReceived";
+                    if (typeof this[handlerName] !== "undefined") {
+                        var data = {};
+                        try {
+                            if (typeof event.data !== "undefined") {
+                                data = window.JSON.parse(event.data);
+                            }
+                        } catch (e) {
+                            alert("parseJSON() raised exception: " +
+                                e.toString() + ".");
+                        }
+                        this[handlerName].call(this, event, data);
+                    } else {
+                        console.log("No handler for event " + eventType + ".");
+                    }
                 }.bind(this), false);
             }
         };
