@@ -20,6 +20,10 @@ files = [
   'tests/jasmine-specs/test-main.js'
 ];
 
+preprocessors = {
+    'js/*.js': 'coverage'
+};
+
 
 // list of files to exclude
 exclude = [
@@ -29,8 +33,12 @@ exclude = [
 
 // test results reporter to use
 // possible values: 'dots', 'progress', 'junit'
-reporters = ['progress'];
+reporters = ['progress', 'coverage'];
 
+coverageReporter = {
+    type : 'lcov',
+    dir : 'coverage/client'
+};
 
 // web server port
 port = 9876;
