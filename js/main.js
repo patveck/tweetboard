@@ -50,6 +50,8 @@ define(["jquery", "hcharts", "highcharts_uttheme", "jasmine-html"],
             chartViews: [],
             monitorView: null,
             messageView: null,
+            
+            eventTypes: ["buildInfo", "message", "addpoint", "open", "error"],
 
             highchartsOptions: hc.setOptions(hct), // Apply the theme
 
@@ -84,7 +86,7 @@ define(["jquery", "hcharts", "highcharts_uttheme", "jasmine-html"],
             },
 
             createMonitor: function(destination) {
-                if (!this.monitor) {
+                if (!this.monitorView) {
                     $(destination).addMonitorGadget({
                         id: "monitorGadget",
                         title: "Message monitor"
@@ -94,21 +96,30 @@ define(["jquery", "hcharts", "highcharts_uttheme", "jasmine-html"],
                 }
             },
 
+            handleLocalMessage: function(eventType, eventData) {
+                var event = $.Event(eventType);
+                event.data = eventData;
+                this.handleEvent(event);
+            },
+            
             createMessager: function(destination) {
-                if (!this.monitor) {
+                if (!this.messageView) {
                     $(destination).addMessageGadget(
                         {
                             id: "testGadget",
                             title: "Local test gadget",
                             placeholder:
-                                "HighCharts options object in JSON notation."
+                                "Event data in JSON notation.",
+                            eventTypes: this.eventTypes,
                         },
                         function(theMessage) {
                             this.messageView = theMessage;
                         }.bind(this),
                         function() {
                             console.log("Button of Messager clicked.");
-                            this.updateWidget(this.messageView.val());
+                            this.handleLocalMessage(
+                                this.messageView.eventType.val(),
+                                this.messageView.eventData.val());
                         }.bind(this));
                 }
             },
@@ -145,9 +156,7 @@ define(["jquery", "hcharts", "highcharts_uttheme", "jasmine-html"],
 
                 /* Initialize eventsource component: */
                 this.source = new EventSource("events");
-                [
-                    "buildInfo", "message", "addpoint", "open",
-                    "error"].forEach(
+                this.eventTypes.forEach(
                     function(eventType) {
                         console.log("Initializing event type " + eventType +
                             ".");
@@ -184,29 +193,32 @@ define(["jquery", "hcharts", "highcharts_uttheme", "jasmine-html"],
                 console.log("EventSource connection opened.");
                 this.monitorView.append("EventSource connection opened.\n");
             },
+            
+            handleEvent: function(event) {
+                var logMessage = "EventSource: message received, type is " +
+                    event.type + ", data is " + event.data + ".";
+                console.log(logMessage);
+                this.monitorView.append(logMessage + "\n");
+                var handlerName = event.type + "EventReceived";
+                if (typeof this[handlerName] !== "undefined") {
+                    var parsedData = {};
+                    try {
+                        if (typeof event.data !== "undefined") {
+                            parsedData = window.JSON.parse(event.data);
+                        }
+                    } catch (e) {
+                        alert("parseJSON() raised exception: " +
+                            e.toString() + ".");
+                    }
+                    this[handlerName].call(this, event, parsedData);
+                } else {
+                    console.log("No handler for event " + event.type + ".");
+                }
+            },
 
             initEventSource: function(eventType) {
-                this.source.addEventListener(eventType, function(event) {
-                    var logMessage = "EventSource: message received, type is " +
-                        eventType + ", data is " + event.data + ".";
-                    console.log(logMessage);
-                    this.monitorView.append(logMessage + "\n");
-                    var handlerName = eventType + "EventReceived";
-                    if (typeof this[handlerName] !== "undefined") {
-                        var data = {};
-                        try {
-                            if (typeof event.data !== "undefined") {
-                                data = window.JSON.parse(event.data);
-                            }
-                        } catch (e) {
-                            alert("parseJSON() raised exception: " +
-                                e.toString() + ".");
-                        }
-                        this[handlerName].call(this, event, data);
-                    } else {
-                        console.log("No handler for event " + eventType + ".");
-                    }
-                }.bind(this), false);
+                this.source.addEventListener(eventType,
+                    (this.handleEvent).bind(this), false);
             }
         };
         return main;

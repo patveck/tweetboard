@@ -3,4 +3,3 @@
 *.md.html
 .coverage
 node_modules/
-doc/

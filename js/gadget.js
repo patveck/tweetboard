@@ -56,7 +56,7 @@ define(["jquery", "hcharts"],
      * array contents is appended, element by element. Can be chained.
      * @function addChartGadget
      * @param {Object} options Settings object with "id" and "title" keys
-     * @param {Function} callback to establish binding
+     * @param {Function} addToModel callback to establish binding
      * @memberof module:gadget
      */
 	$.fn.addChartGadget = function(options, addToModel) {
@@ -72,13 +72,18 @@ define(["jquery", "hcharts"],
 	
 	$.fn.addMessageGadget = function(options, addToModel, clickCallBack) {
 		var contents = [];
-		contents[0] = $('<textarea placeholder="' + options.placeholder +
+		contents[0] = $('<select>');
+		options.eventTypes.forEach(function(selectOption) {
+            contents[0].append(
+                $('<option>').attr('value', selectOption).text(selectOption));
+		});
+		contents[1] = $('<textarea placeholder="' + options.placeholder +
                         '"></textarea>');
-		contents[1] = $('<br>');
+		contents[2] = $('<br>');
 		contents[3] = $('<button type="button">Update</button>').click(
             clickCallBack);
 		this.addGadget(options, contents);
-		addToModel(contents[0]);
+		addToModel({"eventType": contents[0], "eventData": contents[1]});
 		return this;
 	};
 	

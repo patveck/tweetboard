@@ -30,9 +30,10 @@ module.exports = function(grunt) {
         },
         jsdoc: {
             dist: {
-                src: ["js/**/*.js", "tests/jasmine-specs/*.js", "README.md"],
+                src: ["js/**/*.js", "tests/jasmine-specs/*.js", "doc/client/jsdoc.md"],
                 options: {
-                    destination: "doc"
+                    configure: "doc/client/jsdoc_conf.json",
+                    destination: "doc/client"
                 }
             }
         }
