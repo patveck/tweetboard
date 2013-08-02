@@ -70,6 +70,18 @@ define(["jquery", "hcharts"],
 		return this;
 	};
 	
+    /** 
+     * Create a gadget containing an UI to send messages as if they are 
+     * received from the server (for testing purposes).
+     * 
+     * Expects an options object with "id" and "title" keys. Can be chained.
+     * @function addMessageGadget
+     * @param {Object} options Settings object with "id" and "title" keys
+     * @param {Function} addToModel callback to establish binding
+     * @param {Function} clickCallBack Function called when Update button 
+     * is clicked
+     * @memberof module:gadget
+     */
 	$.fn.addMessageGadget = function(options, addToModel, clickCallBack) {
 		var contents = [];
 		contents[0] = $('<select>');
@@ -87,8 +99,18 @@ define(["jquery", "hcharts"],
 		return this;
 	};
 	
+    /** 
+     * Create a gadget containing a textarea that displays messages.
+     * 
+     * Expects an options object with "id" and "title" keys. Can be chained.
+     * @function addMonitorGadget
+     * @param {Object} options Settings object with "id" and "title" keys
+     * @param {Function} addToModel callback to establish binding
+     * @memberof module:gadget
+     */
 	$.fn.addMonitorGadget = function(options, addToModel) {
         var contents = [];
+        // TODO: remove id attribute, think it is not used anymore:
         contents[0] = $('<textarea id="txMessages" rows="20" width="100%">' +
                         '</textarea>');
 		this.addGadget(options, contents);
