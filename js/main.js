@@ -10,6 +10,9 @@ define(["jquery", "jasmine-html", "tweetboard"],
     /**
      * Module containing startup code for the Tweetboard web interface. 
      * 
+     * This module is explicitly excluded in the Karma setup (needed because
+     * it initializes Jasmine). 
+     * 
      * @todo Remove dependency on jQuery by creating Jasmine gadget
      * @exports main
      */
@@ -46,7 +49,8 @@ define(["jquery", "jasmine-html", "tweetboard"],
                 }.bind(this);
                 $("#btRunJasmineTests").click(function() {
                     require(["jasmine-html", "jasmine-specs/UTThemeSpec",
-                             "jasmine-specs/gadgetSpec"], function() {
+                             "jasmine-specs/gadgetSpec",
+                             "jasmine-specs/viewSpec"], function() {
                         jasmine.getEnv().execute();
                     });
                 });

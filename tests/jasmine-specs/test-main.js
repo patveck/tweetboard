@@ -1,3 +1,15 @@
+
+// PhantomJS (used in automated tests) doesn't have bind(), so we use the
+// following shim, taken from 
+// https://github.com/c9/smith/blob/master/tests/public/test.js#L2-L7.
+// By putting it here, we ensure that it is only loaded by test code.
+Function.prototype.bind = Function.prototype.bind || function (thisp) {
+  var fn = this;
+  return function () {
+    return fn.apply(thisp, arguments);
+  };
+};
+
 /* jshint -W106 */
 var tests = Object.keys(window.__karma__.files).filter(function (file) {
     "use strict";
