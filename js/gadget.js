@@ -118,4 +118,43 @@ define(["jquery", "hcharts"],
 		return this;
 	};
 	
+	/**
+	 * Create a gadget that shows alerts.
+	 * 
+	 * Adds an alert gadget to the current jQuery selection. The selection is
+	 * decorated with CSS class "alertgadget-cell".
+	 * @function addMonitorGadget
+     * @param {Object} options Settings object with "id" and "title" keys
+     * @param {Function} addToModel callback to establish binding
+     * @memberof module:gadget
+	 */
+	$.fn.addAlertGadget = function(options, addToModel) {
+        var contents = [];
+        contents[0] = $('<div class="alertgadget"><ol></ol></div>');
+        this.addClass("alertgadget-cell");
+        this.addGadget(options, contents);
+        addToModel(this);
+        return this;
+	};
+	
+	/**
+	 * @function addMonitorGadget
+     * @memberof module:gadget
+	 */
+	$.fn.newAlert = function(alertText) {
+        var newItem = $("<li>" + alertText + "</li>");
+        this.find("ol").prepend(newItem);
+        var currentHeight = parseInt(this.css("height"), 10);
+        this.css("height", (currentHeight + 100) + "px")
+            .css("visibility", "visible");
+        window.setTimeout(function() {
+            newItem.remove();
+            var currentHeight = parseInt(this.css("height"), 10);
+            this.css("height", (currentHeight - 100) + "px");
+            if (currentHeight == 100) {
+                this.css("visibility", "hidden");
+            }
+        }.bind(this), 8000);
+        return this;
+    };
 });

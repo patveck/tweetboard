@@ -30,6 +30,7 @@ define(["jquery", "hcharts", "highcharts_uttheme", "gadget"],
                 this.chartViews = [];
                 this.monitorView = null;
                 this.messageView = null;
+                this.alertView = null;
                 this.highchartsOptions = hc.setOptions(hct);
                 return this;
             },
@@ -127,6 +128,29 @@ define(["jquery", "hcharts", "highcharts_uttheme", "gadget"],
                                 this.messageView.eventType.val(),
                                 this.messageView.eventData.val());
                         }.bind(this));
+                }
+            },
+            
+            /**
+             * 
+             * Create an alert gadget.
+             * 
+             * @param {String} destination Id of the HTML element to which the
+             * gadget is appended
+             * @method
+             * @memberof module:view
+             */
+            createAlerter: function(destination) {
+                if (!this.alertView) {
+                    $(destination).addAlertGadget(
+                        {
+                            id: "alertGadget",
+                            title: "Alert!"
+                        },
+                        function(theAlerter) {
+                            this.alertView = theAlerter;
+                        }.bind(this)).css("height", "0px")
+                        .css("visibility", "hidden");
                 }
             },
 
