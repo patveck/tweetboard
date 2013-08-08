@@ -24,14 +24,13 @@ module.exports = function(grunt) {
         karma: {
             unit: {
               configFile: "karma.conf.js",
-              singleRun: true,
-              browsers: ["PhantomJS"]
+              singleRun: false,
+              browsers: ["PhantomJS", "Chrome"]
             }
         },
         jsdoc: {
             dist: {
-                src: ["js/**/*.js", "tests/jasmine-specs/*.js",
-                      "doc/client/jsdoc.md"],
+                src: ["js/**/*.js", "doc/client/jsdoc.md"],
                 options: {
                     configure: "doc/client/jsdoc_conf.json",
                     destination: "doc/client"
