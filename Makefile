@@ -28,3 +28,10 @@ pythondoc : doc/server/actions.html
 
 doc/server/actions.html : actions.py
 	mkdir -p doc/server; cd doc/server; python -m pydoc -w "..\..\actions.py"
+
+python27 :
+	3to2 -w actions.py
+	3to2 -w buildinfo.py
+	3to2 -w SseHTTPServer.py
+	3to2 -w sseserver.py
+	3to2 -w tweetprocessor.py
