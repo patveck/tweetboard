@@ -19,7 +19,8 @@ def add_point(chart_id, x_coord, y_coord):
                        u"type.")
     if chart_id == u"":
         return message(u"Python function add_point called with empty chart_id.")
-    if not (type(x_coord) is long or type(x_coord) is float):
+    if not (type(x_coord) is int or type(x_coord) is long or
+            type(x_coord) is float):
         return message(u"Python function add_point called with wrong x_coord "
                        u"type.")
     if not (type(y_coord) is int or type(y_coord) is float):

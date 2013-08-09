@@ -14,6 +14,7 @@ import actions
 import buildinfo
 import sys
 
+
 def process_tweets(infile, port):
     u"""Main entry point for the server-side component of the Twitter dashboard.
     It has two responsibilities:
@@ -30,7 +31,7 @@ def process_tweets(infile, port):
 
     # Responsibility 1: provide factory:
     if sys.version_info[0] == 2:
-        factory = ("tweetprocessor", "subscribe")
+        factory = (u"tweetprocessor", u"subscribe")
         SseHTTPServer.SseHTTPRequestHandler.event_queue_factory = factory
     else:
         SseHTTPServer.SseHTTPRequestHandler.event_queue_factory = subscribe
