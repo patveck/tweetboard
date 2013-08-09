@@ -36,10 +36,28 @@ def message(message_text):
             "data": [_serialize({"messageText": message_text})]}
 
 
-def alert(alert_text):
-    """Create message that displays an alert (not a message) in dashboard"""
+def create_alert_gadget(cell, gadget_id):
+    """Create a gadget that shows alerts
+
+    Adds an alert gadget to the current jQuery selection. The selection is
+    decorated with CSS class "alertgadget-cell", the gadget contents with
+    CSS class "alertgadget". Initially, the gadget is not visible (in CSS
+    terms: its ""visibility" is "hidden" and its "height" is "0px".
+    """
+    return {"event": "createAlertGadget",
+            "data": [_serialize({"id": gadget_id, "cell": cell})]}
+
+
+def alert(alert_text, gadget_id):
+    """Show an alert (not a message) in the alert gadget identified by id
+
+    Adds an alert to the alert gadget identified by id. If the gadget is
+    currently not visible, it is made visible. The alert disappears after
+    8 seconds. If it was the last alert to be displayed, the entire gadget is
+    made invisible.
+    """
     return {"event": "alert",
-            "data": [_serialize({"alertText": alert_text})]}
+            "data": [_serialize({"id": gadget_id, "alertText": alert_text})]}
 
 
 def create_general_chart(chart_id, chart_options):
