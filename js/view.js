@@ -149,8 +149,7 @@ define(["jquery", "hcharts", "highcharts_uttheme", "gadget"],
                         },
                         function(theAlerter) {
                             this.alertView = theAlerter;
-                        }.bind(this)).css("height", "0px")
-                        .css("visibility", "hidden");
+                        }.bind(this));
                 }
             },
 

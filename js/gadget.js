@@ -122,23 +122,37 @@ define(["jquery", "hcharts"],
 	 * Create a gadget that shows alerts.
 	 * 
 	 * Adds an alert gadget to the current jQuery selection. The selection is
-	 * decorated with CSS class "alertgadget-cell".
-	 * @function addMonitorGadget
+	 * decorated with CSS class "alertgadget-cell", the gadget contents with
+	 * CSS class "alertgadget". Initially, the gadget is not visible (in CSS
+	 * terms: its ""visibility" is "hidden" and its "height" is "0px".
+	 * @function addAlertGadget
      * @param {Object} options Settings object with "id" and "title" keys
      * @param {Function} addToModel callback to establish binding
      * @memberof module:gadget
 	 */
 	$.fn.addAlertGadget = function(options, addToModel) {
         var contents = [];
-        contents[0] = $('<div class="alertgadget"><ol></ol></div>');
+        // The class is part of the specification (see the JSDoc comment above:
+        contents[0] = $('<div class="alertgadget"></div>');
+        // The gadget is currently implemented as an <ol>. This is not
+        // mandatory according to the specification above:
+        contents[0].append("<ol></ol>");
         this.addClass("alertgadget-cell");
         this.addGadget(options, contents);
         addToModel(this);
+        this.css("height", "0px").css("visibility", "hidden");
         return this;
 	};
 	
 	/**
-	 * @function addMonitorGadget
+	 * Show an alert
+	 * 
+	 * Adds an alert to the currently selected alert gadget. If the gadget is
+	 * currently not visible, it is made visible. The alert disappears after 
+	 * 8 seconds. If it was the last alert to be displayed, the entire gadget is
+	 * made invisible.
+	 * @function newAlert
+	 * @param {String} alertText Text of the alert to display
      * @memberof module:gadget
 	 */
 	$.fn.newAlert = function(alertText) {
@@ -152,7 +166,7 @@ define(["jquery", "hcharts"],
             var currentHeight = parseInt(this.css("height"), 10);
             this.css("height", (currentHeight - 100) + "px");
             if (currentHeight == 100) {
-                this.css("visibility", "hidden");
+                this.css("height", "0px").css("visibility", "hidden");
             }
         }.bind(this), 8000);
         return this;
