@@ -25,6 +25,18 @@ define(["jquery"],
                 $("#buildinfo").append("This is tweetboard, branch " +
                     data.branch + ", commit " + data.commit + ".<br>");
             },
+            
+            createAlertGadgetEventReceived: function(event, data) {
+                console.log("message event: " + data);
+                // TODO: Check whether cell and id exist:
+                this.myView.createAlerter("#" + data.cell, data.id);
+            },
+            
+            alertEventReceived: function(event, data) {
+                console.log("alert received: " + data);
+                // TODO: Check whether cell and id exist:
+                this.myView.alertViews[data.id].newAlert(data.alertText);
+            },
 
             messageEventReceived: function(event, data) {
                 console.log("message event:" + data);

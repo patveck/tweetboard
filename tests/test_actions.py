@@ -50,10 +50,17 @@ class Test(unittest.TestCase):
                           "data": ['{"messageText":"This is a message."}']},
                          "Message should be exactly like second arg.")
 
+    def test_create_alert_gadget(self):
+        self.assertEqual(actions.create_alert_gadget("cell0", "alertgadget"),
+                         {"event": "createAlertGadget",
+                          "data": ['{"cell":"cell0","id":"alertgadget"}']},
+                         "Message should be exactly like second arg.")
+
     def test_alert(self):
-        self.assertEqual(actions.alert("This is an alert."),
+        self.assertEqual(actions.alert("This is an alert.", "alertgadget"),
                          {"event": "alert",
-                          "data": ['{"alertText":"This is an alert."}']},
+                          "data": ['{"alertText":"This is an alert.",'
+                                   '"id":"alertgadget"}']},
                          "Message should be exactly like second arg.")
 
     def test_create_general_chart(self):

@@ -35,7 +35,7 @@ define(["jquery", "handlers", "view"],
                 this.myView = view.factory();
                 // TODO: eventTypes should be initialized by module handler
                 this.eventTypes = ["buildInfo", "message", "addpoint", "open",
-                                   "error"];
+                                   "error", "createAlertGadget", "alert"];
 
                 /* Initialize eventsource component: */
                 for (var eventType in this.eventTypes) {

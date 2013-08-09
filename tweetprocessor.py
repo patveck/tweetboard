@@ -69,6 +69,9 @@ def subscribe(listener_id):
 
     _new_queue = queue.Queue()
     _new_queue.put(actions.send_buildinfo(BUILDINFO))
+    _new_queue.put(actions.create_alert_gadget("cell0", "myAlerter"))
+    _new_queue.put(actions.create_alert_gadget("cell4", "serverinfo"))
+    _new_queue.put(actions.alert("Server started!", "serverinfo"))
     _new_queue.put(actions.create_general_chart("chart1", chart_options))
     LISTENERS[listener_id] = _new_queue
     if not EVENT.is_set():
@@ -98,10 +101,16 @@ class QueueFiller(threading.Thread):
         self._send_to_all_listeners(actions.message("queueuFiller: started in "
                                                     "server thread %s." %
                                                     self.ident))
+        alert_counter = 0
         while True:
             self._send_to_all_listeners(actions.add_point("mychart",
                                                     int(time.time()) * 1000,
                                                     random.random()))
+            if random.random() > .9:
+                alert_counter += 1
+                self._send_to_all_listeners(actions.alert("Random alert %s!" %
+                                                          alert_counter,
+                                                          "myAlerter"))
             time.sleep(1)
 
 
