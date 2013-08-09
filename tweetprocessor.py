@@ -70,7 +70,8 @@ def subscribe(listener_id):
     _new_queue = queue.Queue()
     _new_queue.put(actions.send_buildinfo(BUILDINFO))
     _new_queue.put(actions.create_alert_gadget("cell0", "myAlerter"))
-    _new_queue.put(actions.alert("Server started!", "myAlerter"))
+    _new_queue.put(actions.create_alert_gadget("cell4", "serverinfo"))
+    _new_queue.put(actions.alert("Server started!", "serverinfo"))
     _new_queue.put(actions.create_general_chart("chart1", chart_options))
     LISTENERS[listener_id] = _new_queue
     if not EVENT.is_set():

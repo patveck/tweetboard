@@ -28,12 +28,14 @@ define(["jquery"],
             
             createAlertGadgetEventReceived: function(event, data) {
                 console.log("message event: " + data);
-                this.myView.createAlerter("#" + data.cell);
+                // TODO: Check whether cell and id exist:
+                this.myView.createAlerter("#" + data.cell, data.id);
             },
             
             alertEventReceived: function(event, data) {
                 console.log("alert received: " + data);
-                this.myView.alertView.newAlert(data.alertText);
+                // TODO: Check whether cell and id exist:
+                this.myView.alertViews[data.id].newAlert(data.alertText);
             },
 
             messageEventReceived: function(event, data) {
