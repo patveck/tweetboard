@@ -21,6 +21,7 @@ import sys
 import logging
 import io
 import queue
+import importlib
 
 
 class SseHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
@@ -83,12 +84,21 @@ class SseHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         """Initialize event queue, send headers, start sending events."""
 
         # Register with an event queue, which will be used as event source:
-        if not hasattr(SseHTTPRequestHandler.event_queue_factory, "__call__"):
-            self.logger.critical("SseHTTPRequestHandler(Thread-%s): "
-                                 "event_queue_factory not callable",
-                                 threading.current_thread().ident)
-            exit()
-        self._event_queue = SseHTTPRequestHandler.event_queue_factory(  # pylint: disable=E1102
+        if sys.version_info[0] == 2:
+            factory_module_name = SseHTTPRequestHandler.event_queue_factory[0]
+            factory_function_name = SseHTTPRequestHandler.event_queue_factory[1]
+            factory_module = importlib.import_module(factory_module_name)
+            factory_function = getattr(factory_module, factory_function_name)
+            self._event_queue = factory_function(  # pylint: disable=E1102
+                                u"Thread-%s" % threading.current_thread().ident)
+        else:
+            if not hasattr(SseHTTPRequestHandler.event_queue_factory,
+                           "__call__"):
+                self.logger.critical("SseHTTPRequestHandler(Thread-%s): "
+                                     "event_queue_factory not callable",
+                                     threading.current_thread().ident)
+                exit()
+            self._event_queue = SseHTTPRequestHandler.event_queue_factory(  # pylint: disable=E1102
                                 "Thread-%s" % threading.current_thread().ident)
         self.logger.info("SseHTTPRequestHandler(Thread-%s): registered queue, "
                      "start sending events", threading.current_thread().ident)
