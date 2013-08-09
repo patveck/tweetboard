@@ -29,10 +29,11 @@ define(["jquery", "handlers", "view"],
              * @memberof module:tweetboard
              */
             factory: function() {
-                // TODO: handle case where Eventsource is not implemented:
-                this.source = new EventSource("events");
                 // Module view exports a singleton, so no new operator here:
                 this.myView = view.factory();
+                this.myView.createMonitor("#cell3");
+                // TODO: handle case where Eventsource is not implemented:
+                this.source = new EventSource("events");
                 // TODO: eventTypes should be initialized by module handler
                 this.eventTypes = ["buildInfo", "message", "addpoint", "open",
                                    "error", "createAlertGadget", "alert"];
@@ -60,7 +61,6 @@ define(["jquery", "handlers", "view"],
                 this.myView.createChartGadget("#cell1");
                 this.myView.createMessager("#cell2", this.eventTypes,
                     this.handleLocalMessage.bind(this));
-                this.myView.createMonitor("#cell3");
             },
             
             /**

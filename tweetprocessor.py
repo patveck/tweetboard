@@ -1,13 +1,13 @@
-'''
+u'''
 Created on 19 jul. 2013
 
 @author: patveck
 '''
 
 import SseHTTPServer
-import queue
+import Queue
 import threading
-import socketserver
+import SocketServer
 import time
 import random
 import actions
@@ -15,7 +15,7 @@ import buildinfo
 
 
 def process_tweets(infile, port):
-    """Main entry point for the server-side component of the Twitter dashboard.
+    u"""Main entry point for the server-side component of the Twitter dashboard.
     It has two responsibilities:
     1. Provide an event queue factory to SseHTTPServer.SseHTTPRequestHandler. SseHTTPRequestHandler is the
        piece of Python code that responses to requests sent by the (JavaScript) client running in a browser.
@@ -41,38 +41,38 @@ def process_tweets(infile, port):
     queue_filler.start()
 
     # Responsibility 2b: start server
-    httpd = socketserver.ThreadingTCPServer(("", port),
+    httpd = SocketServer.ThreadingTCPServer((u"", port),
                             SseHTTPServer.SseHTTPRequestHandler)
     httpd.serve_forever()
 
-MYQUEUE = [{"event": "test", "data": ["Line 1 of first message.",
-                                      "Line 2 of first message."]},
-           {"event": "test", "data": ["Line 1 of second message.",
-                                      "Line 2 of second message."]}
+MYQUEUE = [{u"event": u"test", u"data": [u"Line 1 of first message.",
+                                      u"Line 2 of first message."]},
+           {u"event": u"test", u"data": [u"Line 1 of second message.",
+                                      u"Line 2 of second message."]}
           ]
 
 BUILDINFO = buildinfo.get_buildinfo(__file__)
 
 
 def subscribe(listener_id):
-    """Event source factory for SseHTTPServer.SseHTTPRequestHandler."""
-    chart_options = {"title": {"text": "Browser market shares"},
-                     "series": [{"type": "pie",
-                                 "name": "Browser share",
-                                        "data": [["Firefox", 45.0],
-                                                 ["IE", 26.8],
-                                                 ["Chrome", 12.8],
-                                                 ["Safari", 8.5],
-                                                 ["Opera", 6.2],
-                                                 ["Others", 0.7]
+    u"""Event source factory for SseHTTPServer.SseHTTPRequestHandler."""
+    chart_options = {u"title": {u"text": u"Browser market shares"},
+                     u"series": [{u"type": u"pie",
+                                 u"name": u"Browser share",
+                                        u"data": [[u"Firefox", 45.0],
+                                                 [u"IE", 26.8],
+                                                 [u"Chrome", 12.8],
+                                                 [u"Safari", 8.5],
+                                                 [u"Opera", 6.2],
+                                                 [u"Others", 0.7]
                                                  ]}]}
 
-    _new_queue = queue.Queue()
+    _new_queue = Queue.Queue()
     _new_queue.put(actions.send_buildinfo(BUILDINFO))
-    _new_queue.put(actions.create_alert_gadget("cell0", "myAlerter"))
-    _new_queue.put(actions.create_alert_gadget("cell4", "serverinfo"))
-    _new_queue.put(actions.alert("Server started!", "serverinfo"))
-    _new_queue.put(actions.create_general_chart("chart1", chart_options))
+    _new_queue.put(actions.create_alert_gadget(u"cell0", u"myAlerter"))
+    _new_queue.put(actions.create_alert_gadget(u"cell4", u"serverinfo"))
+    _new_queue.put(actions.alert(u"Server started!", u"serverinfo"))
+    _new_queue.put(actions.create_general_chart(u"chart1", chart_options))
     LISTENERS[listener_id] = _new_queue
     if not EVENT.is_set():
         EVENT.set()
@@ -85,7 +85,7 @@ EVENT = threading.Event()
 
 class QueueFiller(threading.Thread):
 
-    """Thread class that fills queue with heartbeat messages (one per second)
+    u"""Thread class that fills queue with heartbeat messages (one per second)
 
     Module 1.1 in the INF program doesn't teach classes, so we try to avoid
     them. Maybe the standard library allows to just run a function in a thread.
@@ -97,22 +97,22 @@ class QueueFiller(threading.Thread):
 
     def run(self):
         EVENT.wait()
-        print("queueuFiller: started in thread %s." % self.ident)
-        self._send_to_all_listeners(actions.message("queueuFiller: started in "
-                                                    "server thread %s." %
+        print u"queueuFiller: started in thread %s." % self.ident
+        self._send_to_all_listeners(actions.message(u"queueuFiller: started in "
+                                                    u"server thread %s." %
                                                     self.ident))
         alert_counter = 0
         while True:
-            self._send_to_all_listeners(actions.add_point("mychart",
+            self._send_to_all_listeners(actions.add_point(u"mychart",
                                                     int(time.time()) * 1000,
                                                     random.random()))
             if random.random() > .9:
                 alert_counter += 1
-                self._send_to_all_listeners(actions.alert("Random alert %s!" %
+                self._send_to_all_listeners(actions.alert(u"Random alert %s!" %
                                                           alert_counter,
-                                                          "myAlerter"))
+                                                          u"myAlerter"))
             time.sleep(1)
 
 
-if __name__ == '__main__':
+if __name__ == u'__main__':
     pass

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # encoding: utf-8
-'''
+u'''
 sseserver -- Python script that serves server-sent events
 
 sseserver is a description
@@ -21,11 +21,12 @@ import tweetprocessor
 import logging
 from argparse import ArgumentParser, FileType
 from argparse import RawDescriptionHelpFormatter
+from io import open
 
 __all__ = []
 __version__ = 0.1
-__date__ = '2013-05-31'
-__updated__ = '2013-05-31'
+__date__ = u'2013-05-31'
+__updated__ = u'2013-05-31'
 
 DEBUG = 1
 TESTRUN = 0
@@ -33,11 +34,11 @@ PROFILE = 0
 
 
 class CLIError(Exception):
-    '''Generic exception to raise and log different fatal errors.'''
+    u'''Generic exception to raise and log different fatal errors.'''
 
     def __init__(self, msg):
         super(CLIError).__init__(type(self))
-        self.msg = "E: %s" % msg
+        self.msg = u"E: %s" % msg
 
     def __str__(self):
         return self.msg
@@ -47,7 +48,7 @@ class CLIError(Exception):
 
 
 def main(argv=None):
-    '''Command line options.'''
+    u'''Command line options.'''
 
     if argv is None:
         argv = sys.argv
@@ -55,12 +56,12 @@ def main(argv=None):
         sys.argv.extend(argv)
 
     program_name = os.path.basename(sys.argv[0])
-    program_version = "v%s" % __version__
-    program_build_date = str(__updated__)
-    program_version_message = '%%(prog)s %s (%s)' % (program_version,
+    program_version = u"v%s" % __version__
+    program_build_date = unicode(__updated__)
+    program_version_message = u'%%(prog)s %s (%s)' % (program_version,
                                                      program_build_date)
-    program_shortdesc = __import__('__main__').__doc__.split("\n")[1]
-    program_license = '''%s
+    program_shortdesc = __import__(u'__main__').__doc__.split(u"\n")[1]
+    program_license = u'''%s
 
   Created by user_name on %s.
   Copyright 2013 organization_name. All rights reserved.
@@ -72,22 +73,22 @@ def main(argv=None):
   or conditions of any kind, either express or implied.
 
 USAGE
-''' % (program_shortdesc, str(__date__))
+''' % (program_shortdesc, unicode(__date__))
 
     try:
         # Setup argument parser
         parser = ArgumentParser(description=program_license,
                                 formatter_class=RawDescriptionHelpFormatter)
-        parser.add_argument("-v", "--verbose", action="count",
-                            help="set verbosity level [default: %(default)s]")
-        parser.add_argument("-V", "--version", action="version",
+        parser.add_argument(u"-v", u"--verbose", action=u"count",
+                            help=u"set verbosity level [default: %(default)s]")
+        parser.add_argument(u"-V", u"--version", action=u"version",
                             version=program_version_message)
-        parser.add_argument("-p", "--port", type=int, default=7737,
-                            metavar="N", help="set port to listen on "
-                            "[default: %(default)s]")
-        parser.add_argument("infile", nargs="?", type=FileType("r"),
-                            default=sys.stdin, help="file containing event "
-                            "messages [default: %(default)s]")
+        parser.add_argument(u"-p", u"--port", type=int, default=7737,
+                            metavar=u"N", help=u"set port to listen on "
+                            u"[default: %(default)s]")
+        parser.add_argument(u"infile", nargs=u"?", type=FileType(u"r"),
+                            default=sys.stdin, help=u"file containing event "
+                            u"messages [default: %(default)s]")
 
         # Process arguments
         args = parser.parse_args()
@@ -96,10 +97,10 @@ USAGE
         port = args.port
         infile = args.infile
 
-        logging.info("Verbosity level %s.", verbose)
+        logging.info(u"Verbosity level %s.", verbose)
 
         if verbose > 0:
-            logging.info("sseserver.py: Serving contents of %s via port %s.",
+            logging.info(u"sseserver.py: Serving contents of %s via port %s.",
                          infile.name, port)
 
         tweetprocessor.process_tweets(infile, port)
@@ -108,29 +109,29 @@ USAGE
     except KeyboardInterrupt:
         ### handle keyboard interrupt ###
         return 0
-    except Exception as ex:
+    except Exception, ex:
         if DEBUG or TESTRUN:
             raise(ex)
-        indent = len(program_name) * " "
-        sys.stderr.write(program_name + ": " + repr(ex) + "\n")
-        sys.stderr.write(indent + "  for help use --help")
+        indent = len(program_name) * u" "
+        sys.stderr.write(program_name + u": " + repr(ex) + u"\n")
+        sys.stderr.write(indent + u"  for help use --help")
         return 2
 
-if __name__ == "__main__":
+if __name__ == u"__main__":
     if DEBUG:
         logging.basicConfig(level=logging.DEBUG)
-        sys.argv.append("-v")
+        sys.argv.append(u"-v")
     if TESTRUN:
         import doctest
         doctest.testmod()
     if PROFILE:
         import cProfile
         import pstats
-        PROFILE_FILENAME = 'sseserver_profile.txt'
-        cProfile.run('main()', PROFILE_FILENAME)
-        STATSFILE = open("profile_stats.txt", "wb")
+        PROFILE_FILENAME = u'sseserver_profile.txt'
+        cProfile.run(u'main()', PROFILE_FILENAME)
+        STATSFILE = open(u"profile_stats.txt", u"wb")
         P = pstats.Stats(PROFILE_FILENAME, stream=STATSFILE)
-        STATS = P.strip_dirs().sort_stats('cumulative')
+        STATS = P.strip_dirs().sort_stats(u'cumulative')
         STATS.print_stats()
         STATSFILE.close()
         sys.exit(0)
