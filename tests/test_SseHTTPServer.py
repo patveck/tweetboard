@@ -58,11 +58,11 @@ class Test(unittest.TestCase):
         logging.basicConfig(level=logging.DEBUG)
         self.server = MagicMock(name="server")
         self.test_queue = queue.Queue()
-        SseHTTPServer.SseHTTPRequestHandler.event_queue_factory = \
-        self.subscribe
+        SseHTTPServer.SseHTTPRequestHandler.event_queue_factory = self.subscribe
 
-    def subscribe(self, listener_id):  # pylint: disable=unused-argument
-        return self.test_queue
+    def subscribe(self, listener_id, action):  # pylint: disable=unused-argument
+        if action == "subscribe":
+            return self.test_queue
 
     def test_class_vars(self):
         self.assertEqual(SseHTTPServer.SseHTTPRequestHandler.eventsource_path,
@@ -182,6 +182,7 @@ class Test(unittest.TestCase):
         with patch.object(SseHTTPServer.SseHTTPRequestHandler, "_check_message",  # @UndefinedVariable
                           return_value=True):
             handler._send_message = MagicMock()
+            handler._event_queue = self.test_queue
             self.test_queue.put({"event": "terminate",
                                  "data": ["End of event stream."]})
             handler._send_events()
