@@ -7,6 +7,7 @@ Created on 19 jul. 2013
 import SseHTTPServer
 import queue
 import threading
+import logging
 import socketserver
 import time
 import random
@@ -25,16 +26,16 @@ def process_tweets(infile, port):
     2. Start two components in parallel:
        a. The ECA rule engine that takes tweets from some source, processes them, and based on that puts messages
           in a queue;
-       b. A server that listens to a certain port and starts a SseHTTPRequestHandler for every incomming
+       b. A server that listens to a certain port and starts a SseHTTPRequestHandler for every incoming
           connection
     """
 
     # Responsibility 1: provide factory:
     if sys.version_info[0] == 2:
-        factory = ("tweetprocessor", "subscribe")
+        factory = ("tweetprocessor", "publisher")
         SseHTTPServer.SseHTTPRequestHandler.event_queue_factory = factory
     else:
-        SseHTTPServer.SseHTTPRequestHandler.event_queue_factory = subscribe
+        SseHTTPServer.SseHTTPRequestHandler.event_queue_factory = publisher
 
     for message in MYQUEUE:
         for count in LISTENERS:
@@ -50,6 +51,10 @@ def process_tweets(infile, port):
                             SseHTTPServer.SseHTTPRequestHandler)
     httpd.serve_forever()
 
+    # All responsibilities taken care of. Wait for the ECA rule engine to
+    # finish:
+    queue_filler.join()
+
 MYQUEUE = [{"event": "test", "data": ["Line 1 of first message.",
                                       "Line 2 of first message."]},
            {"event": "test", "data": ["Line 1 of second message.",
@@ -59,8 +64,15 @@ MYQUEUE = [{"event": "test", "data": ["Line 1 of first message.",
 BUILDINFO = buildinfo.get_buildinfo(__file__)
 
 
-def subscribe(listener_id):
+def publisher(listener_id, action):
     """Event source factory for SseHTTPServer.SseHTTPRequestHandler."""
+    if action == "subscribe":
+        return publisher_subscribe(listener_id)
+    else:
+        publisher_unsubscribe(listener_id)
+
+
+def publisher_subscribe(listener_id):
     chart_options = {"title": {"text": "Browser market shares"},
                      "series": [{"type": "pie",
                                  "name": "Browser share",
@@ -78,10 +90,22 @@ def subscribe(listener_id):
     _new_queue.put(actions.create_alert_gadget("cell4", "serverinfo"))
     _new_queue.put(actions.alert("Server started!", "serverinfo"))
     _new_queue.put(actions.create_general_chart("chart1", chart_options))
+    # Thanks to Python's Global Interpreter Lock, the following is atomic and
+    # will not corrupt the queue, even if multiple threads subscribe at the
+    # "same" time
     LISTENERS[listener_id] = _new_queue
     if not EVENT.is_set():
         EVENT.set()
     return _new_queue
+
+
+def publisher_unsubscribe(listener_id):
+    try:
+        del LISTENERS[listener_id]
+        EVENT.clear()
+    except KeyError:
+        pass
+
 
 LISTENERS = {}
 
@@ -96,28 +120,35 @@ class QueueFiller(threading.Thread):
     them. Maybe the standard library allows to just run a function in a thread.
     """
 
+    def __init__(self):
+        threading.Thread.__init__(self)
+        self.logger = logging.getLogger(__name__)
+
     def _send_to_all_listeners(self, message):
         for count in LISTENERS:
             LISTENERS[count].put(message)
 
     def run(self):
-        EVENT.wait()
-        print("queueuFiller: started in thread %s." % self.ident)
-        self._send_to_all_listeners(actions.message("queueuFiller: started in "
-                                                    "server thread %s." %
-                                                    self.ident))
-        alert_counter = 0
         while True:
-            self._send_to_all_listeners(actions.add_point("mychart",
-                                                    int(time.time()) * 1000,
-                                                    random.random()))
-            if random.random() > .9:
-                alert_counter += 1
-                self._send_to_all_listeners(actions.alert("Random alert %s!" %
-                                                          alert_counter,
-                                                          "myAlerter"))
-            time.sleep(1)
-
+            EVENT.wait()
+            self.logger.info("QueueuFiller: started in thread %s.", self.ident)
+            self._send_to_all_listeners(actions.message("queueuFiller: started in "
+                                                        "server thread %s." %
+                                                        self.ident))
+            alert_counter = 0
+            while len(LISTENERS) > 0:
+                self.logger.info("QueueFiller: %s listeners, %s threads.",
+                      len(LISTENERS), threading.active_count())
+                self._send_to_all_listeners(actions.add_point("mychart",
+                                                        int(time.time()) * 1000,
+                                                        random.random()))
+                if random.random() > .9:
+                    alert_counter += 1
+                    self._send_to_all_listeners(actions.alert("Random alert %s!" %
+                                                              alert_counter,
+                                                              "myAlerter"))
+                time.sleep(1)
+            self.logger.info("QueueFiller: stopped in thread %s.", self.ident)
 
 if __name__ == '__main__':
     pass

@@ -56,12 +56,12 @@ class SseHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                                                       client_address, server)
 
     def setup(self):
-        self.logger.info("SseHTTPRequestHandler(Thread-%s): setup() called",
+        self.logger.debug("SseHTTPRequestHandler(Thread-%s): setup() called",
                          threading.current_thread().ident)
         http.server.SimpleHTTPRequestHandler.setup(self)
 
     def finish(self):
-        self.logger.info("SseHTTPRequestHandler(Thread-%s): finish() called",
+        self.logger.debug("SseHTTPRequestHandler(Thread-%s): finish() called",
                          threading.current_thread().ident)
         if type(self.wfile) == io.BytesIO:
             self.response_value = self.wfile.getvalue()
@@ -84,23 +84,8 @@ class SseHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         """Initialize event queue, send headers, start sending events."""
 
         # Register with an event queue, which will be used as event source:
-        if sys.version_info[0] == 2:
-            factory_module_name = SseHTTPRequestHandler.event_queue_factory[0]
-            factory_function_name = SseHTTPRequestHandler.event_queue_factory[1]
-            factory_module = importlib.import_module(factory_module_name)
-            factory_function = getattr(factory_module, factory_function_name)
-            self._event_queue = factory_function(  # pylint: disable=E1102
-                                u"Thread-%s" % threading.current_thread().ident)
-        else:
-            if not hasattr(SseHTTPRequestHandler.event_queue_factory,
-                           "__call__"):
-                self.logger.critical("SseHTTPRequestHandler(Thread-%s): "
-                                     "event_queue_factory not callable",
-                                     threading.current_thread().ident)
-                exit()
-            self._event_queue = SseHTTPRequestHandler.event_queue_factory(  # pylint: disable=E1102
-                                "Thread-%s" % threading.current_thread().ident)
-        self.logger.info("SseHTTPRequestHandler(Thread-%s): registered queue, "
+        self._call_factory("subscribe")
+        self.logger.debug("SseHTTPRequestHandler(Thread-%s): registered queue, "
                      "start sending events", threading.current_thread().ident)
 
         # Send HTTP headers:
@@ -125,15 +110,41 @@ class SseHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 if _message_contents["event"] == "terminate":
                     _stop = True
             except IOError as ex:
-                self.logger.error("_SseSender(Thread-{0}): I/O error({1}): "
+                if ex.errno == 10053 or ex.errno == 10054 or ex.errno == 32:
+                    self.logger.info("_SseSender(Thread-{0}): "
+                                     "client closed connection.".format(
+                                           threading.current_thread().ident))
+                    _stop = True
+                else:
+                    self.logger.warning("_SseSender(Thread-{0}): "
+                                        "I/O error({1}): "
                               "{2}".format(threading.current_thread().ident,
                                            ex.errno, ex.strerror))
-                if ex.errno == 10053:
-                    _stop = True
             except:
                 self.logger.error("_SseSender(Thread-{0}): Unexpected error: "
                               "{1}".format(threading.current_thread().ident,
                                            sys.exc_info()[0]))
+        self._call_factory("unsubscribe")
+
+    def _call_factory(self, action):
+        if sys.version_info[0] == 2:
+            factory_module_name = SseHTTPRequestHandler.event_queue_factory[0]
+            factory_function_name = SseHTTPRequestHandler.event_queue_factory[1]
+            factory_module = importlib.import_module(factory_module_name)
+            factory_function = getattr(factory_module, factory_function_name)
+            self._event_queue = factory_function(  # pylint: disable=E1102
+                                "Thread-%s" % threading.current_thread().ident,
+                                action)
+        else:
+            if not hasattr(SseHTTPRequestHandler.event_queue_factory,
+                           "__call__"):
+                self.logger.critical("SseHTTPRequestHandler(Thread-%s): "
+                                     "event_queue_factory not callable",
+                                     threading.current_thread().ident)
+                exit()
+            self._event_queue = SseHTTPRequestHandler.event_queue_factory(  # pylint: disable=E1102
+                                "Thread-%s" % threading.current_thread().ident,
+                                action)
 
     def _check_message(self, _message_contents):
         """Check whether message complies with expected format."""
