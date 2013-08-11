@@ -30,19 +30,33 @@ class Test(unittest.TestCase):
                           'called with empty chart_id."}']},
                          "Message should exactly be like second arg.")
 
-    def test_add_point_wrong_x_coord(self):
+    def test_add_point_wrong_x_coord_str(self):
         self.assertEqual(actions.add_point("one", "two", 12.0),
                          {"event": "message",
                           "data": ['{"messageText":"Python function add_point '
                           'called with wrong x_coord type."}']},
-                         "Message should exactly be like second arg.")
+                         "Message should exactly be like second arg (string).")
 
-    def test_add_point_wrong_y_coord(self):
+    def test_add_point_wrong_x_coord_bool(self):
+        self.assertEqual(actions.add_point("one", True, 12.0),
+                         {"event": "message",
+                          "data": ['{"messageText":"Python function add_point '
+                          'called with wrong x_coord type."}']},
+                         "Message should exactly be like second arg (bool).")
+
+    def test_add_point_wrong_y_coord_str(self):
         self.assertEqual(actions.add_point("one", 2, "three"),
                          {"event": "message",
                           "data": ['{"messageText":"Python function add_point '
                           'called with wrong y_coord type."}']},
-                         "Message should exactly be like second arg.")
+                         "Message should exactly be like second arg (string).")
+
+    def test_add_point_wrong_y_coord_bool(self):
+        self.assertEqual(actions.add_point("one", 2, False),
+                         {"event": "message",
+                          "data": ['{"messageText":"Python function add_point '
+                          'called with wrong y_coord type."}']},
+                         "Message should exactly be like second arg (bool).")
 
     def test_message(self):
         self.assertEqual(actions.message("This is a message."),

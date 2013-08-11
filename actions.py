@@ -5,6 +5,7 @@ Created on 22 jul. 2013
 '''
 
 import json
+import numbers
 
 
 def _serialize(my_str):
@@ -19,11 +20,15 @@ def add_point(chart_id, x_coord, y_coord):
                        "type.")
     if chart_id == "":
         return message("Python function add_point called with empty chart_id.")
-    if not (type(x_coord) is int or type(x_coord) is long or
-            type(x_coord) is float):
+    # In the type hierarchy, numbers.Integral instances are also number.Real
+    # instances, but not the other way around. Boolean values are instances
+    # of numbers.Integral
+    if not (isinstance(x_coord, numbers.Real) and
+             not type(x_coord) is bool):
         return message("Python function add_point called with wrong x_coord "
                        "type.")
-    if not (type(y_coord) is int or type(y_coord) is float):
+    if not (isinstance(y_coord, numbers.Real) and
+             not type(y_coord) is bool):
         return message("Python function add_point called with wrong y_coord "
                        "type.")
     return {"event": "addpoint",
