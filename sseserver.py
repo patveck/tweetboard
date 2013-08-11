@@ -27,7 +27,7 @@ __version__ = 0.1
 __date__ = '2013-05-31'
 __updated__ = '2013-05-31'
 
-DEBUG = 1
+DEBUG = 0
 TESTRUN = 0
 PROFILE = 0
 
@@ -48,6 +48,8 @@ class CLIError(Exception):
 
 def main(argv=None):
     '''Command line options.'''
+
+    global DEBUG
 
     if argv is None:
         argv = sys.argv
@@ -74,12 +76,17 @@ def main(argv=None):
 USAGE
 ''' % (program_shortdesc, str(__date__))
 
+    verbose = False
+    DEBUG = False
+
     try:
         # Setup argument parser
         parser = ArgumentParser(description=program_license,
                                 formatter_class=RawDescriptionHelpFormatter)
-        parser.add_argument("-v", "--verbose", action="count",
+        parser.add_argument("-v", "--verbose", action="store_true",
                             help="set verbosity level [default: %(default)s]")
+        parser.add_argument("-d", "--debug", action="store_true",
+                            help="produce debug output")
         parser.add_argument("-V", "--version", action="version",
                             version=program_version_message)
         parser.add_argument("-p", "--port", type=int, default=7737,
@@ -93,20 +100,25 @@ USAGE
         args = parser.parse_args()
 
         verbose = args.verbose
+        DEBUG = args.debug  # pylint: disable=W0603
         port = args.port
         infile = args.infile
 
-        logging.info("Verbosity level %s.", verbose)
-
         if verbose > 0:
-            logging.info("sseserver.py: Serving contents of %s via port %s.",
-                         infile.name, port)
+            logging.basicConfig(level=logging.INFO)
+
+        if DEBUG > 0:
+            logging.basicConfig(level=logging.DEBUG)
+
+        logging.info("sseserver.py: Verbosity level %s.", verbose)
+        logging.info("sseserver.py: Serving contents of %s via port %s.",
+                     infile.name, port)
 
         tweetprocessor.process_tweets(infile, port)
 
         return 0
     except KeyboardInterrupt:
-        ### handle keyboard interrupt ###
+        sys.exit()
         return 0
     except Exception as ex:
         if DEBUG or TESTRUN:
@@ -117,9 +129,6 @@ USAGE
         return 2
 
 if __name__ == "__main__":
-    if DEBUG:
-        logging.basicConfig(level=logging.DEBUG)
-        sys.argv.append("-v")
     if TESTRUN:
         import doctest
         doctest.testmod()
