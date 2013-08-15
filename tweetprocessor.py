@@ -14,6 +14,7 @@ import random
 import actions
 import buildinfo
 import sys
+import resource
 
 
 def process_tweets(infile, port):
@@ -125,8 +126,11 @@ class QueueFiller(threading.Thread):
         self.logger = logging.getLogger(__name__)
 
     def _send_to_all_listeners(self, message):
-        for count in LISTENERS:
-            LISTENERS[count].put(message)
+        try:
+            for count in LISTENERS:
+                LISTENERS[count].put(message)
+        except RuntimeError:
+            pass
 
     def run(self):
         while True:
@@ -137,11 +141,13 @@ class QueueFiller(threading.Thread):
                                                         self.ident))
             alert_counter = 0
             while len(LISTENERS) > 0:
-                self.logger.info(u"QueueFiller: %s listeners, %s threads.",
-                      len(LISTENERS), threading.active_count())
+                maxrss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+                self.logger.info(u"QueueFiller: %s listeners, %s threads, "
+                                 u"%s kB.",
+                      len(LISTENERS), threading.active_count(), maxrss)
                 self._send_to_all_listeners(actions.add_point(u"mychart",
-                                                        int(time.time()) * 1000,
-                                                        random.random()))
+                                                              int(time.time()) * 1000,
+                                                              maxrss))
                 if random.random() > .9:
                     alert_counter += 1
                     self._send_to_all_listeners(actions.alert(u"Random alert %s!" %

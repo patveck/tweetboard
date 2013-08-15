@@ -61,13 +61,23 @@ class SseHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         SimpleHTTPServer.SimpleHTTPRequestHandler.setup(self)
 
     def finish(self):
-        self.logger.debug(u"SseHTTPRequestHandler(Thread-%s): finish() called",
+        self.logger.info(u"SseHTTPRequestHandler(Thread-%s): finish() called",
                          threading.current_thread().ident)
         if type(self.wfile) == io.BytesIO:
             self.response_value = self.wfile.getvalue()
             self.logger.debug(u"SseHTTPRequestHandler: response is %s",
                               unicode(self.response_value))
-        SimpleHTTPServer.SimpleHTTPRequestHandler.finish(self)
+        try:
+            SimpleHTTPServer.SimpleHTTPRequestHandler.finish(self)
+        except:
+            self.logger.warning(u"SseHTTPRequestHandler(Thread-%s): exception "
+                                u"in finish()", threading.current_thread().ident)
+            self._call_factory(u"unsubscribe")
+
+    def handle_error(self, request, client_address):
+        self.logger.warning(u"SseHTTPRequestHandler(Thread-%s): handle_error() "
+                            u"called", threading.current_thread().ident)
+        self._call_factory(u"unsubscribe")
 
     def do_GET(self):
         u"""Serve a GET request. If and only if the request is for path
@@ -124,6 +134,7 @@ class SseHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                 self.logger.error(u"_SseSender(Thread-{0}): Unexpected error: "
                               u"{1}".format(threading.current_thread().ident,
                                            sys.exc_info()[0]))
+        self.logger.info(u"_SseSender(Thread-{0}): Calling unsubscribe.".format(threading.current_thread().ident))
         self._call_factory(u"unsubscribe")
 
     def _call_factory(self, action):
