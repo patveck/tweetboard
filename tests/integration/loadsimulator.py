@@ -45,6 +45,7 @@ STATIC_RESULTS = []
 SSE_RESULTS = []
 OVERALL_SIZE = []
 
+
 class CLIError(Exception):
     '''Generic exception to raise and log different fatal errors.'''
 
@@ -62,7 +63,7 @@ class CLIError(Exception):
 def main(argv=None):  # IGNORE:C0111
     '''Command line options.'''
 
-    global DEBUG
+    global DEBUG  # pylint: disable=W0603
 
     if argv is None:
         argv = sys.argv
@@ -130,7 +131,7 @@ USAGE
         LOGGER.info("loadsimulator: starting main loop.")
         subthreads = []
         start_time = time.time()
-        for count in range(0, load):
+        for _ in range(0, load):
             site_loader = SiteLoader(url, threading.current_thread())
             site_loader.start()
             subthreads.append(site_loader)
@@ -140,7 +141,8 @@ USAGE
         end_time = time.time()
         time_passed = end_time - start_time
         LOGGER.info("loadsimulator: ending main loop.")
-        grand_total = functools.reduce(operator.add, map(int, OVERALL_SIZE))
+        grand_total = functools.reduce(operator.add,
+                                       [int(x) for x in OVERALL_SIZE])
         LOGGER.info("loadsimulator: %s bytes loaded in %s seconds (%s kB/s).",
                     grand_total, time_passed, (grand_total / 1024) / time_passed)
         LOGGER.info("loadsimulator: static results = %s", STATIC_RESULTS)
@@ -190,7 +192,8 @@ class SiteLoader(threading.Thread):
             thread.join()
         end_time = time.time()
         time_passed = end_time - start_time
-        total_size = functools.reduce(operator.add, map(int, self.lengths))
+        total_size = functools.reduce(operator.add,
+                                      [int(x) for x in self.lengths])
         OVERALL_SIZE.append(total_size)
         LOGGER.info("loadsimulator: %s bytes loaded in %s seconds (%s kB/s).",
                     total_size, time_passed, (total_size / 1024) / time_passed)
@@ -209,14 +212,17 @@ class SiteLoader(threading.Thread):
                 url_parts[3] = 80
             events = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             events.connect((url_parts[2], int(url_parts[3])))
-            events.sendall(b"GET /events HTTP/1.1\r\nCache-Control: no-cache\r\n"
+            rfile = events.makefile('rb', -1)
+            wfile = events.makefile('wb', 0)
+            wfile.write(b"GET /events HTTP/1.1\r\nCache-Control: no-cache\r\n"
                            b"Accept: text/event-stream\r\n\r\n")
-            if receive_headers(events) == "200":
+            wfile.flush()  # pylint: disable=E1103
+            if receive_headers(rfile) == "200":
                 messages_received = 0
                 expected_ident = None
                 stop = False
                 while not stop:
-                    ident, eventtype, message_data = receive_sse_message(events)
+                    ident, eventtype, message_data = receive_sse_message(rfile)
                     messages_received += 1
                     LOGGER.debug("loadsimulator: received message %s: ID=%s, "
                                  "type=%s, data=%s.", messages_received,
@@ -239,7 +245,8 @@ class SiteLoader(threading.Thread):
                            "events.")
             SSE_RESULTS.append("exception")
         finally:
-            events.close()
+            wfile.close()
+            rfile.close()
 
 
 class URLloader(threading.Thread):
@@ -272,34 +279,32 @@ class URLloader(threading.Thread):
             self._parent.results.append("exception")
 
 
-def receive_headers(eventsocket):
+def receive_headers(rfile):
     end_of_headers = False
     while not end_of_headers:
-        data = eventsocket.recv(4096).decode("utf-8")
-        match = re.search(r"^HTTP/[0-9]\.[0-9] ([0-9]+) ([A-Z]+)\r\n", data)
+        data = rfile.readline(65536).decode("utf-8").rstrip()
+        match = re.search(r"^HTTP/[0-9]\.[0-9] ([0-9]+) ([A-Z]+)", data)
         if match:
             status = match.group(1)
-        match = re.search(r"\r\n\r\n", data)
-        if match:
+        if data == "":
             end_of_headers = True
     return status
 
 
-def receive_sse_message(eventsocket):
+def receive_sse_message(rfile):
     end_of_message = False
     while not end_of_message:
-        data = eventsocket.recv(4096).decode("utf-8")
-        match = re.search(r"id: ([0-9]+)\r\n", data)
+        data = rfile.readline(65536).decode("utf-8").rstrip()
+        match = re.search(r"id: ([0-9]+)", data)
         if match:
             ident = int(match.group(1))
-        match = re.search(r"event: (\S+)\r\n", data)
+        match = re.search(r"event: (\S+)", data)
         if match:
             eventtype = match.group(1)
-        match = re.search(r"data: (.*)\r\n", data)
+        match = re.search(r"data: (.*)", data)
         if match:
             message_data = match.group(1)
-        match = re.search(r"\r\n\r\n", data)
-        if match:
+        if data == "":
             end_of_message = True
     return (ident, eventtype, message_data)
 
