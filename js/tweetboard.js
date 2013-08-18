@@ -36,7 +36,8 @@ define(["jquery", "handlers", "view"],
                 this.source = new EventSource("events");
                 // TODO: eventTypes should be initialized by module handler
                 this.eventTypes = ["buildInfo", "message", "addpoint", "open",
-                                   "error", "createAlertGadget", "alert"];
+                                   "error", "createAlertGadget", "alert",
+                                   "createChart"];
 
                 /* Initialize eventsource component: */
                 for (var eventType in this.eventTypes) {
@@ -58,9 +59,8 @@ define(["jquery", "handlers", "view"],
              * @memberof module:tweetboard
              */
             run: function() {
-                this.myView.createChartGadget("#cell1");
-                this.myView.createMessager("#cell2", this.eventTypes,
-                    this.handleLocalMessage.bind(this));
+            //    this.myView.createMessager("#cell2", this.eventTypes,
+            //        this.handleLocalMessage.bind(this));
             },
             
             /**

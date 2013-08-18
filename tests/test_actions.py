@@ -65,9 +65,10 @@ class Test(unittest.TestCase):
                          "Message should be exactly like second arg.")
 
     def test_create_alert_gadget(self):
-        self.assertEqual(actions.create_alert_gadget("cell0", "alertgadget"),
+        self.assertEqual(actions.create_alert_gadget("cell0", "alertgadget",
+                                                     "My alerts"),
                          {"event": "createAlertGadget",
-                          "data": ['{"cell":"cell0","id":"alertgadget"}']},
+                          "data": ['{"cell":"cell0","id":"alertgadget","title":"My alerts"}']},
                          "Message should be exactly like second arg.")
 
     def test_alert(self):
@@ -88,11 +89,13 @@ class Test(unittest.TestCase):
                                               ["Opera", 6.2],
                                               ["Others", 0.7]
                                               ]}]}
-        self.assertEqual(actions.create_general_chart("chart1",
+        self.assertEqual(actions.create_general_chart("cell1", "chart1",
+                                                      "My chart",
                                                       chart_options),
                          {"event": "createChart",
-                          "data": [json.dumps({"chartID": "chart1",
-                                               "chartOptions": chart_options},
+                          "data": [json.dumps({"cell": "cell1", "id": "chart1",
+                                               "title": "My chart",
+                                               "options": chart_options},
                                               sort_keys=True,
                                               separators=(',', ':'))]},
                          "Message should be exactly like second arg.")
