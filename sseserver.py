@@ -114,7 +114,7 @@ USAGE
         logging.info("sseserver.py: Serving contents of %s via port %s.",
                      infile.name, port)
 
-        tweetprocessor.process_tweets(infile, port)
+        tweetprocessor.process_tweets(port)
 
         return 0
     except KeyboardInterrupt:

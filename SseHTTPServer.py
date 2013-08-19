@@ -214,7 +214,7 @@ def test(handler_class=SseHTTPRequestHandler,
     """Starts a server on port 8000."""
     test_queue = queue.Queue()
     test_queue.put({"event": "terminate", "data": ["End of event stream."]})
-    SseHTTPRequestHandler.event_queue_factory = lambda subscriber: test_queue
+    SseHTTPRequestHandler.event_queue_factory = lambda subscriber, _: test_queue
     http.server.test(handler_class, server_class)
 
 
