@@ -24,6 +24,20 @@ import queue
 import importlib
 
 
+class SseHTTPServer(socketserver.ThreadingTCPServer):
+
+    def __init__(self, server_address, RequestHandlerClass,
+                 bind_and_activate=True):
+        self.logger = logging.getLogger(__name__)
+        socketserver.ThreadingTCPServer.__init__(self, server_address,
+                                                 RequestHandlerClass,
+                                                 bind_and_activate)
+
+    def handle_error(self, request, client_address):
+        self.logger.warning("SseHTTPServer(Thread-%s): handle_error() "
+                            "called", threading.current_thread().ident)
+
+
 class SseHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 
     """HTTP GET request handler that serves a stream of event messages
@@ -69,12 +83,20 @@ class SseHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                               str(self.response_value))
         http.server.SimpleHTTPRequestHandler.finish(self)
 
+    def log_message(self, format_str, *args):
+        self.logger.info("%s - - [%s] %s\n" %
+                         (self.address_string(),
+                          self.log_date_time_string(),
+                          format_str % args))
+
     def do_GET(self):
         """Serve a GET request. If and only if the request is for path
         eventsource_path (by default: /events), then serve events according
         to the SSE W3C recommendation. Otherwise, serve files by delegating to
         SimpleHTTPServer from the Python standard library.
         """
+        self.logger.debug("SseHTTPRequestHandler(Thread-%s): do_GET, path=%s",
+                         threading.current_thread().ident, self.path)
         if self.path == SseHTTPRequestHandler.eventsource_path:
             self._start_event_stream()
         else:

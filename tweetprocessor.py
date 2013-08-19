@@ -8,7 +8,6 @@ import SseHTTPServer
 import queuefiller
 import queue
 import threading
-import socketserver
 import actions
 import buildinfo
 
@@ -52,7 +51,7 @@ def process_tweets(port):
     queue_filler.start()
 
     # Responsibility 2b: start server
-    httpd = socketserver.ThreadingTCPServer(("", port),
+    httpd = SseHTTPServer.SseHTTPServer(("", port),
                             SseHTTPServer.SseHTTPRequestHandler)
     httpd.serve_forever()
 
