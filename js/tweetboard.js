@@ -37,7 +37,7 @@ define(["jquery", "handlers", "view"],
                 // TODO: eventTypes should be initialized by module handler
                 this.eventTypes = ["buildInfo", "message", "addpoint", "open",
                                    "error", "createAlertGadget", "alert",
-                                   "createMapsGadget"];
+                                   "createMapsGadget", "addMapsMarker"];
 
                 /* Initialize eventsource component: */
                 for (var eventType in this.eventTypes) {

@@ -89,8 +89,9 @@ def create_maps_gadget(cell, gadget_id, gadget_title, map_options):
     """Create message that creates a new Google Maps gadget in dashboard.
 
     This action creates a message that when received by the client creates a
-    gadget that shows a Google map. We use a small part of the API documented
-    at https://developers.google.com/maps/documentation/javascript/
+    gadget that shows a Google map. We use Gmap3 (see http://gmap3.net/) as
+    library to display the map; see the documentation of Gmap3 for all
+    options.
 
     Args:
         cell:

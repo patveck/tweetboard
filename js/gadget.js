@@ -5,8 +5,7 @@
  * 
  */
 
-define(["jquery", "hcharts",
-        "async!http://maps.google.com/maps/api/js?sensor=false"],
+define(["jquery", "hcharts", "gmap3"],
     /**
      * Module containing a number of jQuery plugins.
      * 
@@ -187,20 +186,12 @@ define(["jquery", "hcharts",
     $.fn.addMapsGadget = function(options, addToModel) {
         var contents = [];
         // The class is part of the specification (see the JSDoc comment above:
-        contents[0] = $('<div id="a1234" class="mapsgadget"></div>');
+        contents[0] = $('<div class="mapsgadget"></div>');
         this.addClass("mapsgadget-cell");
         this.addGadget(options, contents);
-        var tmpOptions = {
-            center: new google.maps.LatLng(-34.397, 150.644),
-            zoom: 8,
-            mapTypeId: google.maps.MapTypeId.ROADMAP
-          };
-        var tmp1 = document.getElementById("a1234");
-        var theMap = new google.maps.Map(contents[0][0],
-            tmpOptions);
+        var theMap = contents[0].gmap3(options.mapsConfig);
         addToModel(theMap);
         return this;
     };
-    
 
 });

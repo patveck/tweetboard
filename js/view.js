@@ -188,14 +188,49 @@ define(["jquery", "hcharts", "highcharts_uttheme", "gadget"],
              */
             createMapsGadget: function(destination, id, title, options) {
                 // TODO: Check whether destination is an empty element:
+                // TODO: Check whether map with same id hasn't been created:
                 $(destination).addMapsGadget({
                     id: id,
                     title: title,
                     mapsConfig: options
                 }, function(theMap) {
-                    // TODO: Append to chartViews (rather than replace):
                     this.mapsViews[id] = theMap;
                 }.bind(this));
+            },
+            
+            addMapsMarker: function(id, lat, long, text) {
+                // TODO: Check if mapsViews[id] is defined:
+                this.mapsViews[id].gmap3({
+                    marker: {
+                        latLng: [lat, long],
+                        data: text,
+                        events: {
+                            mouseover: function(marker, event, context) {
+                                var map = this.mapsViews[id].gmap3("get");
+                                var infowindow = this.mapsViews[id].gmap3({
+                                        get: { name: "infowindow" }});
+                                if( infowindow ) {
+                                    infowindow.open(map, marker);
+                                    infowindow.setContent(context.data);
+                                } else {
+                                    this.mapsViews[id].gmap3({
+                                        infowindow: {
+                                            anchor: marker,
+                                            options: {content: context.data}
+                                        }
+                                    });
+                                }
+                            }.bind(this),
+                            mouseout: function() {
+                                var infowindow = this.mapsViews[id].gmap3({
+                                    get: { name: "infowindow" }});
+                                if( infowindow ) {
+                                    infowindow.close();
+                                }
+                            }.bind(this)
+                        }
+                    }
+                });
             },
             
             /** 
