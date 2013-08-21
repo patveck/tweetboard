@@ -31,12 +31,13 @@ define(["jquery", "handlers", "view"],
             factory: function() {
                 // Module view exports a singleton, so no new operator here:
                 this.myView = view.factory();
-                this.myView.createMonitor("#cell3");
+                this.myView.createMonitor("#cell4");
                 // TODO: handle case where Eventsource is not implemented:
                 this.source = new EventSource("events");
                 // TODO: eventTypes should be initialized by module handler
                 this.eventTypes = ["buildInfo", "message", "addpoint", "open",
-                                   "error", "createAlertGadget", "alert"];
+                                   "error", "createAlertGadget", "alert",
+                                   "createMapsGadget"];
 
                 /* Initialize eventsource component: */
                 for (var eventType in this.eventTypes) {

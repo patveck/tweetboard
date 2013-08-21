@@ -28,6 +28,7 @@ define(["jquery", "hcharts", "highcharts_uttheme", "gadget"],
             factory: function() {
                 /* The ViewModel: */
                 this.chartViews = [];
+                this.mapsViews = [];
                 this.monitorView = null;
                 this.messageView = null;
                 this.alertViews = [];
@@ -174,6 +175,26 @@ define(["jquery", "hcharts", "highcharts_uttheme", "gadget"],
                 }, function(theChart) {
                     // TODO: Append to chartViews (rather than replace):
                     this.chartViews.firstGraph = theChart;
+                }.bind(this));
+            },
+            
+            /**
+             * Create a maps gadget. 
+             *
+             * @param {String} destination Id of the HTML element to which the
+             * gadget is appended
+             * @method
+             * @memberof module:view
+             */
+            createMapsGadget: function(destination, id, title, options) {
+                // TODO: Check whether destination is an empty element:
+                $(destination).addMapsGadget({
+                    id: id,
+                    title: title,
+                    mapsConfig: options
+                }, function(theMap) {
+                    // TODO: Append to chartViews (rather than replace):
+                    this.mapsViews[id] = theMap;
                 }.bind(this));
             },
             

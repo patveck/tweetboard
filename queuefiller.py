@@ -56,5 +56,5 @@ class QueueFiller(threading.Thread):
 
 def put_initial_messages(_new_queue):
     _new_queue.put(actions.create_alert_gadget("cell0", "myAlerter"))
-    _new_queue.put(actions.create_alert_gadget("cell4", "serverinfo"))
+    _new_queue.put(actions.create_alert_gadget("cell5", "serverinfo"))
     _new_queue.put(actions.alert("Server started!", "serverinfo"))

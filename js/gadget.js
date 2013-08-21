@@ -5,7 +5,8 @@
  * 
  */
 
-define(["jquery", "hcharts"],
+define(["jquery", "hcharts",
+        "async!http://maps.google.com/maps/api/js?sensor=false"],
     /**
      * Module containing a number of jQuery plugins.
      * 
@@ -171,4 +172,35 @@ define(["jquery", "hcharts"],
         }.bind(this), 8000);
         return this;
     };
+
+    /**
+     * Create a gadget that shows a Google map.
+     * 
+     * Adds a Google maps gadget to the current jQuery selection. The selection
+     * is decorated with CSS class "mapsgadget-cell", the gadget contents with
+     * CSS class "mapsgadget". 
+     * @function addMapsGadget
+     * @param {Object} options Settings object with "id" and "title" keys
+     * @param {Function} addToModel callback to establish binding
+     * @memberof module:gadget
+     */
+    $.fn.addMapsGadget = function(options, addToModel) {
+        var contents = [];
+        // The class is part of the specification (see the JSDoc comment above:
+        contents[0] = $('<div id="a1234" class="mapsgadget"></div>');
+        this.addClass("mapsgadget-cell");
+        this.addGadget(options, contents);
+        var tmpOptions = {
+            center: new google.maps.LatLng(-34.397, 150.644),
+            zoom: 8,
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+          };
+        var tmp1 = document.getElementById("a1234");
+        var theMap = new google.maps.Map(contents[0][0],
+            tmpOptions);
+        addToModel(theMap);
+        return this;
+    };
+    
+
 });

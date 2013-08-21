@@ -42,6 +42,10 @@ def message(message_text):
             "data": [_serialize({"messageText": message_text})]}
 
 
+#
+# Alert gadget actions:
+#
+
 def create_alert_gadget(cell, gadget_id):
     """Create a gadget that shows alerts
 
@@ -66,11 +70,75 @@ def alert(alert_text, gadget_id):
             "data": [_serialize({"id": gadget_id, "alertText": alert_text})]}
 
 
+#
+# Chart gadget actions:
+#
+
 def create_general_chart(chart_id, chart_options):
     """Create message that creates a new chart in dashboard"""
     return {"event": "createChart",
             "data": [_serialize({"chartID": chart_id,
                                  "chartOptions": chart_options})]}
+
+#
+# Maps gadget actions
+#
+
+
+def create_maps_gadget(cell, gadget_id, gadget_title, map_options):
+    """Create message that creates a new Google Maps gadget in dashboard.
+
+    This action creates a message that when received by the client creates a
+    gadget that shows a Google map. We use a small part of the API documented
+    at https://developers.google.com/maps/documentation/javascript/
+
+    Args:
+        cell:
+        gadget_id:
+        gadget_title:
+        map_options: see https://developers.google.com/maps/documentation/javascript/reference#MapOptions
+    Returns:
+    """
+    return {"event": "createMapsGadget",
+            "data": [_serialize({"cell": cell, "id": gadget_id,
+                                 "title": gadget_title,
+                                 "mapConfig": map_options})]}
+
+
+def add_maps_marker(gadget_id, lat, long, marker_text):
+    return {"event": "addMapsMarker",
+            "data": [_serialize({"id": gadget_id, "lat": lat, "long": long,
+                                 "text": marker_text})]}
+
+#
+# Tweetlist gadget actions
+#
+
+
+def create_tweetlist_gadget(cell, gadget_id, gadget_title):
+    """Create message that creates a new tweetlist gadget in dashboard.
+
+    This action creates a message that when received by the client creates a
+    gadget that can show a list of tweets.
+
+    Args:
+        cell:
+        gadget_id:
+        gadget_title:
+    Returns:
+    """
+    return {"event": "createTweetlistGadget",
+            "data": [_serialize({"cell": cell, "id": gadget_id,
+                                 "title": gadget_title})]}
+
+
+def add_tweetlist_tweet(gadget_id, tweet_data):
+    return {"event": "addTweet",
+            "data": [_serialize({"id": gadget_id, "tweet": tweet_data})]}
+
+#
+# Buildinfo action:
+#
 
 
 def send_buildinfo(buildinfo):

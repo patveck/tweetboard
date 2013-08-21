@@ -32,6 +32,13 @@ define(["jquery"],
                 this.myView.createAlerter("#" + data.cell, data.id);
             },
             
+            createMapsGadgetEventReceived: function(event, data) {
+                console.log("message event: " + data);
+                // TODO: Check whether cell, id and options exist:
+                this.myView.createMapsGadget("#" + data.cell, data.id,
+                    data.title, data.options);
+            },
+            
             alertEventReceived: function(event, data) {
                 console.log("alert received: " + data);
                 // TODO: Check whether cell and id exist:

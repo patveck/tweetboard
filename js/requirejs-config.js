@@ -10,11 +10,12 @@
 	requirejs.config({
 		"baseUrl": "js",
 		"paths": {
+            "async":         "../lib/js/async",
 			"hcharts":       "../lib/js/highcharts",
 			"jasmine":       "../lib/js/jasmine",
 			"jasmine-html":  "../lib/js/jasmine-html",
 			"jquery":        "../lib/js/jquery-1.8.2.min",
-			"jasmine-specs": "../tests/jasmine-specs/"
+			"jasmine-specs": "../tests/jasmine-specs/",
 		},
 		"shim": {
 			"jasmine": {
