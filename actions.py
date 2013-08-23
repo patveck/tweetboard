@@ -97,7 +97,9 @@ def create_maps_gadget(cell, gadget_id, gadget_title, map_options):
         cell:
         gadget_id:
         gadget_title:
-        map_options: see https://developers.google.com/maps/documentation/javascript/reference#MapOptions
+        map_options: Python options dictionary that will be used in the call
+            of the $.gmap3() function in the client; see see http://gmap3.net/
+            for documentation.
     Returns:
     """
     return {"event": "createMapsGadget",
@@ -107,6 +109,18 @@ def create_maps_gadget(cell, gadget_id, gadget_title, map_options):
 
 
 def add_maps_marker(gadget_id, lat, long, marker_text):
+    """Add a marker to an existing Google map.
+
+    Args:
+        gadget_id: String identifying the existing map to which this marker is
+            to be added.
+        lat: Latitude of the position of this marker on the map.
+        long: Longitude of the position of this marker on the map.
+        marker_text: String (can be HTML formatted) that will be displayed in an
+            "infowindow" displayed on top of the marker when the mouse moves
+            over it.
+    Returns:
+    """
     return {"event": "addMapsMarker",
             "data": [_serialize({"id": gadget_id, "lat": lat, "long": long,
                                  "text": marker_text})]}
