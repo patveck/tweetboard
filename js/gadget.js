@@ -213,4 +213,35 @@ define(["jquery", "hcharts", "gmap3"],
         return this;
     };
 
+    /**
+     * Create a gadget that shows a tweetlist (a list of tweets, like Twitter's
+     * timeline.
+     * 
+     * Adds a tweetlist gadget to the current jQuery selection. The selection
+     * is decorated with CSS class "tweetlistgadget-cell", the gadget contents
+     * with CSS class "tweetlistgadget-contents". 
+     * @function addMapsGadget
+     * @param {Object} options Settings object with "id" and "title" keys
+     * @param {Function} addToModel callback to establish binding
+     * @memberof module:gadget
+     */
+    $.fn.addTweetListGadget = function(options, addToModel) {
+        var contents = [];
+        // The class is part of the specification (see the JSDoc comment above:
+        contents[0] = $('<ol class="tweetlistgadget-contents ' +
+                        'stream-items"></ol>');
+        this.addClass("tweetlistgadget-cell");
+        this.addGadget(options, contents);
+        addToModel(this);
+        return this;
+    };
+    
+    $.fn.addTweet = function(tweet) {
+        // TODO: Check if selection has correct type
+        var newItem = $("<li>" + tweet.text + "</li>");
+        this.find("ol").prepend(newItem);
+        // TODO: remove last one if more than 20
+        return this;
+    };
+
 });
