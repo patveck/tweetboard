@@ -48,9 +48,22 @@ define(["jquery"],
             
             addMapsMarkerEventReceived: function(event, data) {
                 console.log("message event: " + data);
-                // TODO: Check whether cell, id and options exist:
+                // TODO: check whether id exists:
                 this.myView.addMapsMarker(data.id, data.lat, data.long,
                     data.text);
+            },
+            
+            createTweetlistGadgetEventReceived: function(event, data) {
+                console.log("message event: " + data);
+                // TODO: Check whether cell, id and options exist:
+                this.myView.createTweetListGadget("#" + data.cell, data.id,
+                    data.title);
+            },
+            
+            addTweetEventReceived: function(event, data) {
+                console.log("message event: " + data);
+                // TODO: Check whether data.id exists:
+                this.myView.tweetListViews[data.id].addTweet(data.tweet);
             },
             
             alertEventReceived: function(event, data) {

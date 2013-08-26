@@ -9,6 +9,8 @@ import time
 import random
 import logging
 import actions
+import offline_tweets
+import json
 
 
 class QueueFiller(threading.Thread):
@@ -48,6 +50,14 @@ class QueueFiller(threading.Thread):
                 self.publish(actions.add_point("listeners",
                                                int(time.time()) * 1000,
                                                random.random()))
+                tweetdata = offline_tweets.cache[int(random.random() * 200)][4]
+                try:
+                    self.publish(actions.add_tweetlist_tweet("allTweets",
+                        json.loads(tweetdata)))
+                except ValueError:
+                    # json.loads throws a ValueError for some tweets that
+                    # apparantly contain invalid json.
+                    pass
                 if random.random() > .9:
                     alert_counter += 1
                     self.publish(actions.alert("Random alert %s!" %
@@ -116,13 +126,15 @@ def put_initial_messages(_new_queue):
 #         listeners_chart_options["series"][0]["data"].append(new_point)
 
     _new_queue.put(actions.create_alert_gadget("cell0", "myAlerter", "Alert!"))
-    _new_queue.put(actions.create_alert_gadget("cell4", "serverinfo",
+    _new_queue.put(actions.create_alert_gadget("cell9", "serverinfo",
                                                "Server information"))
     _new_queue.put(actions.alert("Server started!", "serverinfo"))
     _new_queue.put(actions.create_maps_gadget("cell3", "myMap1", "Tweet geos",
                                               map_options))
     _new_queue.put(actions.add_maps_marker("myMap1", 78.840319, 16.585922,
                                            "Jan was here!"))
+    _new_queue.put(actions.create_tweetlist_gadget("cell4", "allTweets",
+                                                   "Random tweets"))
     _new_queue.put(actions.create_general_chart("cell1", "memusage",
                                                 "Server max RSS",
                                                 memusage_chart_options))

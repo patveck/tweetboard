@@ -29,6 +29,7 @@ define(["jquery", "hcharts", "highcharts_uttheme", "gadget"],
                 /* The ViewModel: */
                 this.chartViews = [];
                 this.mapsViews = [];
+                this.tweetListViews = [];
                 this.monitorView = null;
                 this.messageView = null;
                 this.alertViews = [];
@@ -151,6 +152,37 @@ define(["jquery", "hcharts", "highcharts_uttheme", "gadget"],
                     chartConfig: options
                 }, function(theChart) {
                     this.chartViews[id] = theChart;
+                }.bind(this));
+            },
+            
+            /**
+             * Create a tweetlist gadget. 
+             *
+             * already been created, this method does nothing.
+             * @param {String} cell Id of the HTML element to which the
+             * gadget is appended
+             * @param {String} id A string that serves as reference for the
+             * gadget that is created
+             * @param {String} title Title of the gadget, will be displayed in
+             * the gadget's title bar
+             * @method
+             * @memberof module:view
+             */
+            createTweetListGadget: function(cell, id, title) {
+                if ($.trim($(cell).html()) !== "") {
+                    console.error("Destination " + cell + " should be empty.");
+                    return;
+                }
+                if (this.tweetListViews.hasOwnProperty(id)) {
+                    console.error("A tweet list with id " + id +
+                                  " already exists.");
+                    return;
+                }
+                $(cell).addTweetListGadget({
+                    id: id,
+                    title: title
+                }, function(theTweetList) {
+                    this.tweetListViews[id] = theTweetList;
                 }.bind(this));
             },
             

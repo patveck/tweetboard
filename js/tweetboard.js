@@ -31,14 +31,15 @@ define(["jquery", "handlers", "view"],
             factory: function() {
                 // Module view exports a singleton, so no new operator here:
                 this.myView = view.factory();
-                this.myView.createMonitor("#cell4");
+                this.myView.createMonitor("#cell7");
                 // TODO: handle case where Eventsource is not implemented:
                 this.source = new EventSource("events");
                 // TODO: eventTypes should be initialized by module handler
                 this.eventTypes = ["buildInfo", "message", "addpoint", "open",
                                    "error", "createAlertGadget", "alert",
                                    "createMapsGadget", "addMapsMarker",
-                                   "createChart"];
+                                   "createChart", "createTweetlistGadget",
+                                   "addTweet"];
 
                 /* Initialize eventsource component: */
                 for (var eventType in this.eventTypes) {
@@ -60,8 +61,8 @@ define(["jquery", "handlers", "view"],
              * @memberof module:tweetboard
              */
             run: function() {
-            //    this.myView.createMessager("#cell2", this.eventTypes,
-            //        this.handleLocalMessage.bind(this));
+                this.myView.createMessager("#cell8", this.eventTypes,
+                    this.handleLocalMessage.bind(this));
             },
             
             /**
