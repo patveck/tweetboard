@@ -136,16 +136,21 @@ define(["jquery", "hcharts", "highcharts_uttheme", "gadget"],
              * @memberof module:view
              */
             createChartGadget: function(cell, id, title, options) {
-                // TODO: Check whether destination is an empty element:
-                if (!this.alertViews[id]) {
-                    $(cell).addChartGadget({
-                        id: id,
-                        title: title,
-                        chartConfig: options
-                    }, function(theChart) {
-                        this.chartViews[id] = theChart;
-                    }.bind(this));
+                if ($.trim($(cell).html()) !== "") {
+                    console.error("Destination " + cell + " should be empty.");
+                    return;
                 }
+                if (this.chartViews.hasOwnProperty(id)) {
+                    console.error("A chart with id " + id + " already exists.");
+                    return;
+                }
+                $(cell).addChartGadget({
+                    id: id,
+                    title: title,
+                    chartConfig: options
+                }, function(theChart) {
+                    this.chartViews[id] = theChart;
+                }.bind(this));
             },
             
             /** 

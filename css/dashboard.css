@@ -11,3 +11,7 @@ body { font-family:Arial Narrow,Arial,Helvetica,sans-serif; }
     transition: height 1s;
     -webkit-transition: height 1s;
 }
+.chartgadget-contents {
+	width: 100%;
+	heigth: 400px;
+}

@@ -52,7 +52,7 @@ define(["jquery", "hcharts"],
      * 
      * Adds a chart gadget to the current jQuery selection. The selection is
      * decorated with CSS class "chartgadget-cell", the gadget contents with
-     * CSS class "chartgadget". Can be chained.
+     * CSS class "chartgadget-contents". Can be chained.
      * @function addChartGadget
      * @param {Object} options Settings object with "id", "title" and 
      * chartConfig keys. The chartConfig key should have a value as expected
@@ -72,7 +72,7 @@ define(["jquery", "hcharts"],
             return this;
         }
         var contents = [];
-        contents[0] = $('<div> style="width:100%; height:400px;"').attr("id",
+        contents[0] = $("<div>").addClass("chartgadget-contents").attr("id",
                 options.id+"Div");
         this.addClass("chartgadget-cell");
 		this.addGadget(options, contents);

@@ -257,13 +257,23 @@ define(["jquery", "gadget"], function($, gadget) {
         });
         
         // The selection is decorated with CSS class "chartgadget-cell", the 
-        // gadget contents with CSS class "chartgadget".
+        // gadget contents with CSS class "chartgadget-contents".
         it("should decorate with the specified CSS classes", function() {
             var theDiv = $("<div>");
-            theDiv.addChartGadget({id: "myID"}, function(theChart) {
+            $("body").append(theDiv);
+            theDiv.addChartGadget({id: "myID",
+                                   chartConfig: {}}, function(theChart) {
                 chartCallbackMock.setChart(theChart);
             });
             expect(theDiv.hasClass("chartgadget-cell")).toBeTruthy();
+            expect(theDiv.children().size()).toEqual(1);
+            expect(theDiv.children().attr("id")).toEqual("myID");
+            expect(theDiv.children().hasClass("gadget")).toBeTruthy();
+            expect(theDiv.children().children().size()).toEqual(2);
+            expect(theDiv.children().children().last().children().size())
+                .toEqual(1);
+            expect(theDiv.children().children().last().children().first()
+                .hasClass("chartgadget-contents")).toBeTruthy();
         });
     });
         
