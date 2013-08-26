@@ -5,7 +5,7 @@
  * 
  */
 
-define(["jquery", "hcharts"],
+define(["jquery", "hcharts", "gmap3"],
     /**
      * Module containing a number of jQuery plugins.
      * 
@@ -190,4 +190,27 @@ define(["jquery", "hcharts"],
         }.bind(this), 8000);
         return this;
     };
+
+    /**
+     * Create a gadget that shows a Google map.
+     * 
+     * Adds a Google maps gadget to the current jQuery selection. The selection
+     * is decorated with CSS class "mapsgadget-cell", the gadget contents with
+     * CSS class "mapsgadget". 
+     * @function addMapsGadget
+     * @param {Object} options Settings object with "id" and "title" keys
+     * @param {Function} addToModel callback to establish binding
+     * @memberof module:gadget
+     */
+    $.fn.addMapsGadget = function(options, addToModel) {
+        var contents = [];
+        // The class is part of the specification (see the JSDoc comment above:
+        contents[0] = $('<div class="mapsgadget"></div>');
+        this.addClass("mapsgadget-cell");
+        this.addGadget(options, contents);
+        var theMap = contents[0].gmap3(options.mapsConfig);
+        addToModel(theMap);
+        return this;
+    };
+
 });

@@ -28,6 +28,7 @@ define(["jquery", "hcharts", "highcharts_uttheme", "gadget"],
             factory: function() {
                 /* The ViewModel: */
                 this.chartViews = [];
+                this.mapsViews = [];
                 this.monitorView = null;
                 this.messageView = null;
                 this.alertViews = [];
@@ -151,6 +152,61 @@ define(["jquery", "hcharts", "highcharts_uttheme", "gadget"],
                 }, function(theChart) {
                     this.chartViews[id] = theChart;
                 }.bind(this));
+            },
+            
+            /**
+             * Create a maps gadget. 
+             *
+             * @param {String} destination Id of the HTML element to which the
+             * gadget is appended
+             * @method
+             * @memberof module:view
+             */
+            createMapsGadget: function(destination, id, title, options) {
+                // TODO: Check whether destination is an empty element:
+                // TODO: Check whether map with same id hasn't been created:
+                $(destination).addMapsGadget({
+                    id: id,
+                    title: title,
+                    mapsConfig: options
+                }, function(theMap) {
+                    this.mapsViews[id] = theMap;
+                }.bind(this));
+            },
+            
+            addMapsMarker: function(id, lat, long, text) {
+                // TODO: Check if mapsViews[id] is defined:
+                this.mapsViews[id].gmap3({
+                    marker: {
+                        latLng: [lat, long],
+                        data: text,
+                        events: {
+                            mouseover: function(marker, event, context) {
+                                var map = this.mapsViews[id].gmap3("get");
+                                var infowindow = this.mapsViews[id].gmap3({
+                                        get: { name: "infowindow" }});
+                                if( infowindow ) {
+                                    infowindow.open(map, marker);
+                                    infowindow.setContent(context.data);
+                                } else {
+                                    this.mapsViews[id].gmap3({
+                                        infowindow: {
+                                            anchor: marker,
+                                            options: {content: context.data}
+                                        }
+                                    });
+                                }
+                            }.bind(this),
+                            mouseout: function() {
+                                var infowindow = this.mapsViews[id].gmap3({
+                                    get: { name: "infowindow" }});
+                                if( infowindow ) {
+                                    infowindow.close();
+                                }
+                            }.bind(this)
+                        }
+                    }
+                });
             },
             
             /** 

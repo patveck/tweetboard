@@ -39,6 +39,20 @@ define(["jquery"],
                     data.title);
             },
             
+            createMapsGadgetEventReceived: function(event, data) {
+                console.log("message event: " + data);
+                // TODO: Check whether cell, id and options exist:
+                this.myView.createMapsGadget("#" + data.cell, data.id,
+                    data.title, data.mapConfig);
+            },
+            
+            addMapsMarkerEventReceived: function(event, data) {
+                console.log("message event: " + data);
+                // TODO: Check whether cell, id and options exist:
+                this.myView.addMapsMarker(data.id, data.lat, data.long,
+                    data.text);
+            },
+            
             alertEventReceived: function(event, data) {
                 console.log("alert received: " + data);
                 // TODO: Check whether cell and id exist:

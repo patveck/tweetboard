@@ -99,6 +99,12 @@ def put_initial_messages(_new_queue):
                                                      random.random()}]}]
                                }
 
+    map_options = {"map": {"options": {"zoom": 4,
+                                       "center": [78.840319, 16.585922]
+                                       }
+                           }
+                   }
+
     for index in range(-19, 0):
         new_point = {"x": (int(time.time()) + index) * 1000,
                      "y": random.random()}
@@ -113,6 +119,10 @@ def put_initial_messages(_new_queue):
     _new_queue.put(actions.create_alert_gadget("cell4", "serverinfo",
                                                "Server information"))
     _new_queue.put(actions.alert("Server started!", "serverinfo"))
+    _new_queue.put(actions.create_maps_gadget("cell3", "myMap1", "Tweet geos",
+                                              map_options))
+    _new_queue.put(actions.add_maps_marker("myMap1", 78.840319, 16.585922,
+                                           "Jan was here!"))
     _new_queue.put(actions.create_general_chart("cell1", "memusage",
                                                 "Server max RSS",
                                                 memusage_chart_options))

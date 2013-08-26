@@ -22,11 +22,18 @@ requirejs.config({
     baseUrl: "/base/js",
 
     paths: {
+    "async":         "../lib/js/async",
+    "gmap3":         "../lib/js/gmap3",
 	"hcharts":       "../lib/js/highcharts",
 	"jquery":        "../lib/js/jquery-1.8.2.min"
     },
 
     shim: {
+        "gmap3": {
+            deps: ["jquery",
+              "async!http://maps.googleapis.com/maps/api/js?sensor=false"],
+            exports: "$.gmap3"
+        },
         "hcharts": {
             "deps": ["jquery"],
             "exports": "Highcharts"

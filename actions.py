@@ -63,8 +63,14 @@ def message(message_text):
             "data": [_serialize({"messageText": message_text})]}
 
 
+#
+# Alert gadget actions:
+#
+
 def create_alert_gadget(cell, gadget_id, gadget_title):
     """Create a gadget that shows alerts.
+
+
 
     Adds an alert gadget to the current jQuery selection. The selection is
     decorated with CSS class "alertgadget-cell", the gadget contents with
@@ -109,6 +115,10 @@ def alert(alert_text, gadget_id):
             "data": [_serialize({"id": gadget_id, "alertText": alert_text})]}
 
 
+#
+# Chart gadget actions:
+#
+
 def create_general_chart(cell, chart_id, gadget_title, chart_options):
     """Create message that creates a new chart in dashboard.
 
@@ -133,6 +143,99 @@ def create_general_chart(cell, chart_id, gadget_title, chart_options):
             "data": [_serialize({"id": chart_id, "cell": cell,
                                  "title": gadget_title,
                                  "options": chart_options})]}
+#
+# Maps gadget actions
+#
+
+
+def create_maps_gadget(cell, gadget_id, gadget_title, map_options):
+    """Create message that creates a new Google Maps gadget in dashboard.
+
+    This action creates a message that when received by the client creates a
+    gadget that shows a Google map. We use Gmap3 (see http://gmap3.net/) as
+    library to display the map; see the documentation of Gmap3 for all
+    options.
+
+    Args:
+        cell:
+        gadget_id:
+        gadget_title:
+        map_options: Python options dictionary that will be used in the call
+            of the $.gmap3() function in the client; see see http://gmap3.net/
+            for documentation.
+    Returns:
+        A dict with two members ("event" and "data"), with the value of "data"
+        a JSON serialization of the arguments. This is the format expected by
+        SseHTTPRequestHandler.
+    """
+    return {"event": "createMapsGadget",
+            "data": [_serialize({"cell": cell, "id": gadget_id,
+                                 "title": gadget_title,
+                                 "mapConfig": map_options})]}
+
+
+def add_maps_marker(gadget_id, lat, long, marker_text):
+    """Add a marker to an existing Google map.
+
+    Args:
+        gadget_id: String identifying the existing map to which this marker is
+            to be added.
+        lat: Latitude of the position of this marker on the map.
+        long: Longitude of the position of this marker on the map.
+        marker_text: String (can be HTML formatted) that will be displayed in an
+            "infowindow" displayed on top of the marker when the mouse moves
+            over it.
+    Returns:
+        A dict with two members ("event" and "data"), with the value of "data"
+        a JSON serialization of the arguments. This is the format expected by
+        SseHTTPRequestHandler.
+    """
+    return {"event": "addMapsMarker",
+            "data": [_serialize({"id": gadget_id, "lat": lat, "long": long,
+                                 "text": marker_text})]}
+
+#
+# Tweetlist gadget actions
+#
+
+
+def create_tweetlist_gadget(cell, gadget_id, gadget_title):
+    """Create message that creates a new tweetlist gadget in dashboard.
+
+    This action creates a message that when received by the client creates a
+    gadget that can show a list of tweets.
+
+    Args:
+        cell:
+        gadget_id:
+        gadget_title:
+    Returns:
+        A dict with two members ("event" and "data"), with the value of "data"
+        a JSON serialization of the arguments. This is the format expected by
+        SseHTTPRequestHandler.
+    """
+    return {"event": "createTweetlistGadget",
+            "data": [_serialize({"cell": cell, "id": gadget_id,
+                                 "title": gadget_title})]}
+
+
+def add_tweetlist_tweet(gadget_id, tweet_data):
+    """Add a tweet to an existing tweet list gadget.
+
+    Args:
+        gadget_id:
+        tweet_data:
+    Returns:
+        A dict with two members ("event" and "data"), with the value of "data"
+        a JSON serialization of the arguments. This is the format expected by
+        SseHTTPRequestHandler.
+    """
+    return {"event": "addTweet",
+            "data": [_serialize({"id": gadget_id, "tweet": tweet_data})]}
+
+#
+# Buildinfo action:
+#
 
 
 def send_buildinfo(buildinfo):
