@@ -43,7 +43,7 @@ define(["jquery"],
                 console.log("message event: " + data);
                 // TODO: Check whether cell, id and options exist:
                 this.myView.createMapsGadget("#" + data.cell, data.id,
-                    data.title, data.options);
+                    data.title, data.mapConfig);
             },
             
             addMapsMarkerEventReceived: function(event, data) {
