@@ -126,7 +126,7 @@ def put_initial_messages(_new_queue):
 #         listeners_chart_options["series"][0]["data"].append(new_point)
 
     _new_queue.put(actions.create_alert_gadget("cell0", "myAlerter", "Alert!"))
-    _new_queue.put(actions.create_alert_gadget("cell8", "serverinfo",
+    _new_queue.put(actions.create_alert_gadget("cell9", "serverinfo",
                                                "Server information"))
     _new_queue.put(actions.alert("Server started!", "serverinfo"))
     _new_queue.put(actions.create_maps_gadget("cell3", "myMap1", "Tweet geos",

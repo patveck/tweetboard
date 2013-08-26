@@ -61,8 +61,8 @@ define(["jquery", "handlers", "view"],
              * @memberof module:tweetboard
              */
             run: function() {
-            //    this.myView.createMessager("#cell2", this.eventTypes,
-            //        this.handleLocalMessage.bind(this));
+                this.myView.createMessager("#cell8", this.eventTypes,
+                    this.handleLocalMessage.bind(this));
             },
             
             /**
