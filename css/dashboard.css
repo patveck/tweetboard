@@ -13,3 +13,7 @@ body { font-family:Arial Narrow,Arial,Helvetica,sans-serif; height: 100% }
     -webkit-transition: height 1s;
 }
 .mapsgadget { width: 100%; height: 300px }
+.chartgadget-contents {
+	width: 100%;
+	height: 400px;
+}

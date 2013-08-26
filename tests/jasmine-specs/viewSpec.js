@@ -60,4 +60,52 @@ define(["jquery", "view"], function($, view) {
             expect(callback).toHaveBeenCalledWith("eventType1", eventTestData);
         });
     });
+    
+    describe("Method createChartGadget", function() {
+        var myView = null;
+        var myDiv = null;
+        
+        beforeEach(function() {
+           myView = view.factory();
+           myDiv = $("<div>").attr("id", "dest1");
+           $("body").append(myDiv);
+           spyOn(console, "error");
+        });
+        
+        afterEach(function() {
+           myDiv.remove();
+           myDiv = null;
+        });
+        
+        it("should create a chart gadget on an empty DIV element", function() {
+           var theOptions = {"chart": {"type": "spline"}};
+           expect(myView.chartViews.hasOwnProperty("test_chart")).toBeFalsy();
+           myView.createChartGadget("#dest1", "test_chart", "Test chart",
+               theOptions);
+           expect(myView.chartViews.hasOwnProperty("test_chart")).toBeTruthy();
+        });
+        
+        it("should give an error when DIV not empty", function() {
+            myDiv.append($("<div>Hello world!</div>"));
+            expect(myView.chartViews.hasOwnProperty("test_chart")).toBeFalsy();
+            var theOptions = {"chart": {"type": "spline"}};
+            myView.createChartGadget("#dest1", "test_chart", "Test chart",
+                theOptions);
+            expect(myView.chartViews.hasOwnProperty("test_chart")).toBeFalsy();
+            expect(console.error).toHaveBeenCalled();
+        });
+        
+        it("should give an error when chart already exists", function() {
+            var theOptions = {"chart": {"type": "spline"}};
+            var chartID = "test_chart";
+            expect(myView.chartViews.hasOwnProperty(chartID)).toBeFalsy();
+            myView.chartViews[chartID] = {"value": "Just an object"};
+            var tmpValue = myView.chartViews[chartID];
+            myView.createChartGadget("#dest1", chartID, "Test chart",
+                theOptions);
+            expect(myView.chartViews[chartID]).toEqual(tmpValue);
+            expect(console.error).toHaveBeenCalled();
+        });
+        
+    });
 });

@@ -92,10 +92,11 @@ def publisher_subscribe(listener_id):
     # thread. Thanks to Python's Global Interpreter Lock, the following is
     # atomic and will not corrupt the queue, even if multiple threads subscribe
     # at the "same" time
+
     LISTENERS[listener_id] = _new_queue
 
     # Threads that fill the queue are assumed to wait until EVENT is set.
-    # Currently, Queuefiller is honoring that assumiton.
+    # Currently, Queuefiller is honoring that assumption.
     if not EVENT.is_set():
         EVENT.set()
 

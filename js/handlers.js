@@ -26,10 +26,17 @@ define(["jquery"],
                     data.branch + ", commit " + data.commit + ".<br>");
             },
             
+            createChartEventReceived: function(event, data) {
+                console.log("message event: " + data);
+                this.myView.createChartGadget("#" + data.cell, data.id,
+                    data.title, data.options);
+            },
+            
             createAlertGadgetEventReceived: function(event, data) {
                 console.log("message event: " + data);
                 // TODO: Check whether cell and id exist:
-                this.myView.createAlerter("#" + data.cell, data.id);
+                this.myView.createAlerter("#" + data.cell, data.id,
+                    data.title);
             },
             
             createMapsGadgetEventReceived: function(event, data) {
@@ -58,7 +65,7 @@ define(["jquery"],
             },
 
             addpointEventReceived: function(event, data) {
-                this.myView.chartViews.firstGraph.series[0].addPoint([
+                this.myView.chartViews[data.chartID].series[0].addPoint([
                     data.X, data.Y], true, true);
             },
 
