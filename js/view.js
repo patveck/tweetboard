@@ -35,43 +35,6 @@ define(["jquery", "hcharts", "highcharts_uttheme", "gadget"],
                 return this;
             },
 
-            tmp: {
-                chart: {
-                    type: "spline",
-                    animation: Highcharts.svg
-                },
-                title: {text: "Live random data"
-                },
-                xAxis: {
-                    type: "datetime",
-                    tickPixelInterval: 150
-                },
-                yAxis: {
-                    title: {text: "Value"
-                    },
-                    plotLines: [{
-                        value: 0,
-                        width: 1,
-                        color: "#808080"
-                    }]
-                },
-                series: [{
-                    name: "Random data",
-                    data: (function() {
-                        // generate an array of random data
-                        var data = [], time = (new Date()).getTime(), i;
-
-                        for (i = -19; i <= 0; i++) {
-                            data.push({
-                                x: time + i * 1000,
-                                y: Math.random()
-                            });
-                        }
-                        return data;
-                    })()
-                }]
-            },
-
             /**
              * Create a monitor gadget. 
              *
@@ -135,23 +98,24 @@ define(["jquery", "hcharts", "highcharts_uttheme", "gadget"],
              * 
              * Create an alert gadget.
              * 
-             * @param {String} destination Id of the HTML element to which the
+             * @param {String} cell Id of the HTML element to which the
              * gadget is appended
              * @param {String} id A string that serves as reference for the
              * gadget that is created
+             * @param {String} title Title of the gadget, will be displayed in
+             * the gadget's title bar
              * @method
              * @memberof module:view
              */
-            createAlerter: function(destination, id) {
+            createAlerter: function(cell, id, title) {
                 if (!this.alertViews[id]) {
-                    $(destination).addAlertGadget(
-                        {
-                            id: "alertGadget",
-                            title: "Alert!"
-                        },
-                        function(theAlerter) {
-                            this.alertViews[id] = theAlerter;
-                        }.bind(this));
+                    $(cell).addAlertGadget({
+                        id: id,
+                        title: title
+                    },
+                    function(theAlerter) {
+                        this.alertViews[id] = theAlerter;
+                    }.bind(this));
                 }
             },
 
@@ -160,20 +124,32 @@ define(["jquery", "hcharts", "highcharts_uttheme", "gadget"],
              * Create a chart gadget. 
              *
              * already been created, this method does nothing.
-             * @param {String} destination Id of the HTML element to which the
+             * @param {String} cell Id of the HTML element to which the
              * gadget is appended
+             * @param {String} id A string that serves as reference for the
+             * gadget that is created
+             * @param {String} title Title of the gadget, will be displayed in
+             * the gadget's title bar
+             * @param {Object} options Chart options as required by
+             * HighCharts.JS
              * @method
              * @memberof module:view
              */
-            createChartGadget: function(destination) {
-                // TODO: Check whether destination is an empty element:
-                $(destination).addChartGadget({
-                    id: "firstGraph",
-                    title: "The first chart",
-                    chartConfig: this.tmp
+            createChartGadget: function(cell, id, title, options) {
+                if ($.trim($(cell).html()) !== "") {
+                    console.error("Destination " + cell + " should be empty.");
+                    return;
+                }
+                if (this.chartViews.hasOwnProperty(id)) {
+                    console.error("A chart with id " + id + " already exists.");
+                    return;
+                }
+                $(cell).addChartGadget({
+                    id: id,
+                    title: title,
+                    chartConfig: options
                 }, function(theChart) {
-                    // TODO: Append to chartViews (rather than replace):
-                    this.chartViews.firstGraph = theChart;
+                    this.chartViews[id] = theChart;
                 }.bind(this));
             },
             

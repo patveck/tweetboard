@@ -212,5 +212,69 @@ define(["jquery", "gadget"], function($, gadget) {
         });
         
     });
+    
+    describe(".addChartGadget jQuery extension", function() {
+        var chartCallbackMock = null;
+        
+        beforeEach(function() {
+            chartCallbackMock = jasmine.createSpyObj("chartCallbackMock",
+                ["setChart"]);
+            spyOn(console, "error");
+        });
+        
+        afterEach(function() {
+            chartCallbackMock = null;
+        });
+        
+        it("should call the second argument exactly once", function() {
+            var theDiv = $("<div>");
+            $("body").append(theDiv);
+            theDiv.addChartGadget({id: "myDiv",
+                                   chartConfig: {}}, function(theChart) {
+                chartCallbackMock.setChart(theChart);
+            });
+            expect(chartCallbackMock.setChart.calls.length).toEqual(1);
+        });
+        
+        it("should log an error and not call second argument if no id given",
+            function() {
+            var theDiv = $("<div>");
+            $("body").append(theDiv);
+            theDiv.addChartGadget({chartConfig: {}}, function(theChart) {
+                chartCallbackMock.setChart(theChart);
+            });
+            expect(chartCallbackMock.setChart.calls.length).toEqual(0);
+            expect(console.error).toHaveBeenCalled();
+        });
+        
+        it("should log an error and not call 2nd arg if chartConfig missing",
+            function() {
+            $("<div>").addChartGadget({}, function(theChart) {
+                chartCallbackMock.setChart(theChart);
+            });
+            expect(chartCallbackMock.setChart.calls.length).toEqual(0);
+            expect(console.error).toHaveBeenCalled();
+        });
+        
+        // The selection is decorated with CSS class "chartgadget-cell", the 
+        // gadget contents with CSS class "chartgadget-contents".
+        it("should decorate with the specified CSS classes", function() {
+            var theDiv = $("<div>");
+            $("body").append(theDiv);
+            theDiv.addChartGadget({id: "myID",
+                                   chartConfig: {}}, function(theChart) {
+                chartCallbackMock.setChart(theChart);
+            });
+            expect(theDiv.hasClass("chartgadget-cell")).toBeTruthy();
+            expect(theDiv.children().size()).toEqual(1);
+            expect(theDiv.children().attr("id")).toEqual("myID");
+            expect(theDiv.children().hasClass("gadget")).toBeTruthy();
+            expect(theDiv.children().children().size()).toEqual(2);
+            expect(theDiv.children().children().last().children().size())
+                .toEqual(1);
+            expect(theDiv.children().children().last().children().first()
+                .hasClass("chartgadget-contents")).toBeTruthy();
+        });
+    });
         
 });

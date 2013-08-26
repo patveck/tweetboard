@@ -50,21 +50,40 @@ define(["jquery", "hcharts"],
     /** 
      * Create a gadget containing a chart from the HighCharts library. 
      * 
-     * Expects an options object with "id" and "title" keys.
-     * Creates a set of hierarchically nested div elements that can be styled
-     * with CSS to look like a gadget. At the deepest level, the elements of
-     * array contents is appended, element by element. Can be chained.
+     * Adds a chart gadget to the current jQuery selection. The selection is
+     * decorated with CSS class "chartgadget-cell", the gadget contents with
+     * CSS class "chartgadget-contents". Can be chained.
      * @function addChartGadget
-     * @param {Object} options Settings object with "id" and "title" keys
+     * @param {Object} options Settings object with "id", "title" and 
+     * chartConfig keys. The chartConfig key should have a value as expected
+     * by HighChartsJS. The value of chartConfig.chart.renderTo is overwritten
+     * if it exists. Does nothing if a chart gadget with the same id already
+     * exists.
      * @param {Function} addToModel callback to establish binding
      * @memberof module:gadget
      */
-	$.fn.addChartGadget = function(options, addToModel) {
+    $.fn.addChartGadget = function(options, addToModel) {
+        if( options.id !== undefined &&
+            $("#" + options.id + "Div").size() > 0 ) {
+            return this;
+        }
+        if( options.id === undefined ) {
+            console.error(".addChartGadget called without id key in options.");
+            return this;
+        }
         var contents = [];
-        contents[0] = $('<div> style="width:100%; height:400px;"').attr("id",
+        contents[0] = $("<div>").addClass("chartgadget-contents").attr("id",
                 options.id+"Div");
+        this.addClass("chartgadget-cell");
 		this.addGadget(options, contents);
-		// TODO: check if keys exist
+		if( options.chartConfig === undefined) {
+            console.error(
+                ".addChartGadget called without chartConfig key in options.");
+            return this;
+		}
+		if( options.chartConfig.chart === undefined ) {
+            options.chartConfig.chart = {renderTo: ""};
+		}
         options.chartConfig.chart.renderTo = options.id + "Div";
 		addToModel(new hc.Chart(options.chartConfig));
 		return this;
