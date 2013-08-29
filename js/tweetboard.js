@@ -63,6 +63,8 @@ define(["jquery", "handlers", "view"],
             run: function() {
                 this.myView.createMessager("#cell8", this.eventTypes,
                     this.handleLocalMessage.bind(this));
+                this.myView.createWordCloudGadget("#cell5", "myWordCloud",
+                    "Just a word cloud");
             },
             
             /**
