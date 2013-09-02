@@ -8,9 +8,35 @@ import json
 import numbers
 
 
+class ActionWrapper:
+    """Simple wrapper class for publishing action value."""
+    def __init__(self, value):
+        self.value = value
+
+
+def _encode(value):
+    """Encode the action."""
+    return ActionWrapper(value)
+
+
+def is_action(value):
+    """check if the string is an action."""
+    return isinstance(value, ActionWrapper)
+
+
+def decode(wrapper):
+    """Decode the action."""
+    return wrapper.value
+
+
 def _serialize(my_str):
     """Return a JSON version of str."""
     return json.dumps(my_str, sort_keys=True, separators=(',', ':'))
+
+
+def cell_definition(id, gadget, options):
+    """Handle a cell definition"""
+    print('# Should handle cell_definition('+id+','+gadget+','+options+')')
 
 
 def add_point(chart_id, x_coord, y_coord):
@@ -43,9 +69,9 @@ def add_point(chart_id, x_coord, y_coord):
              not type(y_coord) is bool):
         return message("Python function add_point called with wrong y_coord "
                        "type.")
-    return {"event": "addpoint",
+    return _encode({"event": "addpoint",
             "data": [_serialize({"chartID": chart_id,
-                                 "X": x_coord, "Y": y_coord})]}
+                                 "X": x_coord, "Y": y_coord})]})
 
 
 def message(message_text):
@@ -59,8 +85,8 @@ def message(message_text):
         a JSON serialization of the arguments. This is the format expected by
         SseHTTPRequestHandler.
     """
-    return {"event": "message",
-            "data": [_serialize({"messageText": message_text})]}
+    return _encode({"event": "message",
+            "data": [_serialize({"messageText": message_text})]})
 
 
 #
@@ -88,9 +114,9 @@ def create_alert_gadget(cell, gadget_id, gadget_title):
         a JSON serialization of the arguments. This is the format expected by
         SseHTTPRequestHandler.
     """
-    return {"event": "createAlertGadget",
+    return _encode({"event": "createAlertGadget",
             "data": [_serialize({"id": gadget_id, "cell": cell,
-                                 "title": gadget_title})]}
+                                 "title": gadget_title})]})
 
 
 def alert(alert_text, gadget_id):
@@ -111,8 +137,8 @@ def alert(alert_text, gadget_id):
         a JSON serialization of the arguments. This is the format expected by
         SseHTTPRequestHandler.
     """
-    return {"event": "alert",
-            "data": [_serialize({"id": gadget_id, "alertText": alert_text})]}
+    return _encode({"event": "alert",
+            "data": [_serialize({"id": gadget_id, "alertText": alert_text})]})
 
 
 #
@@ -139,10 +165,10 @@ def create_general_chart(cell, chart_id, gadget_title, chart_options):
         a JSON serialization of the arguments. This is the format expected by
         SseHTTPRequestHandler.
     """
-    return {"event": "createChart",
+    return _encode({"event": "createChart",
             "data": [_serialize({"id": chart_id, "cell": cell,
                                  "title": gadget_title,
-                                 "options": chart_options})]}
+                                 "options": chart_options})]})
 #
 # Maps gadget actions
 #
@@ -168,10 +194,10 @@ def create_maps_gadget(cell, gadget_id, gadget_title, map_options):
         a JSON serialization of the arguments. This is the format expected by
         SseHTTPRequestHandler.
     """
-    return {"event": "createMapsGadget",
+    return _encode({"event": "createMapsGadget",
             "data": [_serialize({"cell": cell, "id": gadget_id,
                                  "title": gadget_title,
-                                 "mapConfig": map_options})]}
+                                 "mapConfig": map_options})]})
 
 
 def add_maps_marker(gadget_id, lat, long, marker_text):
@@ -190,9 +216,9 @@ def add_maps_marker(gadget_id, lat, long, marker_text):
         a JSON serialization of the arguments. This is the format expected by
         SseHTTPRequestHandler.
     """
-    return {"event": "addMapsMarker",
+    return _encode({"event": "addMapsMarker",
             "data": [_serialize({"id": gadget_id, "lat": lat, "long": long,
-                                 "text": marker_text})]}
+                                 "text": marker_text})]})
 
 #
 # Tweetlist gadget actions
@@ -214,9 +240,9 @@ def create_tweetlist_gadget(cell, gadget_id, gadget_title):
         a JSON serialization of the arguments. This is the format expected by
         SseHTTPRequestHandler.
     """
-    return {"event": "createTweetlistGadget",
+    return _encode({"event": "createTweetlistGadget",
             "data": [_serialize({"cell": cell, "id": gadget_id,
-                                 "title": gadget_title})]}
+                                 "title": gadget_title})]})
 
 
 def add_tweetlist_tweet(gadget_id, tweet_data):
@@ -230,8 +256,8 @@ def add_tweetlist_tweet(gadget_id, tweet_data):
         a JSON serialization of the arguments. This is the format expected by
         SseHTTPRequestHandler.
     """
-    return {"event": "addTweet",
-            "data": [_serialize({"id": gadget_id, "tweet": tweet_data})]}
+    return _encode({"event": "addTweet",
+            "data": [_serialize({"id": gadget_id, "tweet": tweet_data})]})
 
 #
 # Buildinfo action:
@@ -250,9 +276,16 @@ def send_buildinfo(buildinfo):
         a JSON serialization of the arguments. This is the format expected by
         SseHTTPRequestHandler.
     """
-    return {"event": "buildInfo",
-            "data": [_serialize(buildinfo)]}
+    return _encode({"event": "buildInfo",
+            "data": [_serialize(buildinfo)]})
 
+# IMPORTANT: any function which may be used in the ECA rule file must be defined
+# in he action_function dict
+action_functions = {
+	"add_point" : ( 3, lambda input: lambda event: add_point(tuple(input[1](event))[0],tuple(input[1](event))[1],tuple(input[1](event))[2])),
+	"message" : ( 1, lambda input: lambda event: message(tuple(input[1](event))[0])),
+	"alert" : ( 3, lambda input: lambda event: alert(tuple(input[1](event))[0],tuple(input[1](event))[1]))
+}
 
 if __name__ == '__main__':
     pass
