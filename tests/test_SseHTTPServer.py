@@ -120,6 +120,9 @@ class Test(unittest.TestCase):
                                               "Line 2 of first message."]}
         self.assertTrue(handler._check_message(_message),
                         "Valid message, so should have returned True.")
+        _message = "This is a string, not a dict."
+        self.assertFalse(handler._check_message(_message),
+                         "Message should be a dict.")
         _message = {"data": ["Line 1 of first message.",
                              "Line 2 of first message."]}
         self.assertFalse(handler._check_message(_message),

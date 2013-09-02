@@ -82,7 +82,7 @@ def publisher_subscribe(listener_id):
 
     # At least, we want new listeners to know who we are, so the first message
     # we put in the queue is our own identification:
-    _new_queue.put(actions.send_buildinfo(BUILDINFO))
+    _new_queue.put(actions.decode(actions.send_buildinfo(BUILDINFO)))
 
     # We proceed with filling the queue with some initial test data:
     queuefiller.put_initial_messages(_new_queue)
@@ -113,7 +113,7 @@ def publisher_unsubscribe(listener_id):
 
 def _send_to_all_listeners(message):
     for key in LISTENERS:
-        LISTENERS[key].put(message)
+        LISTENERS[key].put(actions.decode(message))
 
 
 def _listener_length():
