@@ -115,6 +115,12 @@ def put_initial_messages(_new_queue):
                            }
                    }
 
+    example_wordcloud = [{"text": "Amsterdam", "weight": 15},
+                         {"text": "Rotterdam", "weight": 15},
+                         {"text": "Den Haag", "weight": 8},
+                         {"text": "Enschede", "weight": 3},
+                         {"text": "Hengelo", "weight": 1.5}]
+
     for index in range(-19, 0):
         new_point = {"x": (int(time.time()) + index) * 1000,
                      "y": random.random()}
@@ -138,6 +144,9 @@ def put_initial_messages(_new_queue):
                                         16.585922, "Jan was here!")))
     _new_queue.put(actions.decode(actions.create_tweetlist_gadget("cell4",
                                         "allTweets", "Random tweets")))
+    _new_queue.put(actions.decode(actions.create_wordcloud_gadget("cell5",
+                                        "myWordCloud", "Dutch cities",
+                                        example_wordcloud)))
     _new_queue.put(actions.decode(actions.create_general_chart("cell1",
                                         "memusage", "Server max RSS",
                                         memusage_chart_options)))

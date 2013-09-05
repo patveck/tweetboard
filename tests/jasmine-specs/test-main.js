@@ -24,6 +24,7 @@ requirejs.config({
     paths: {
     "async":         "../lib/js/async",
     "gmap3":         "../lib/js/gmap3",
+    "jqcloud":       "../lib/js/jqcloud-1.0.4",
 	"hcharts":       "../lib/js/highcharts",
 	"jquery":        "../lib/js/jquery-1.8.2.min"
     },
@@ -33,6 +34,9 @@ requirejs.config({
             deps: ["jquery",
               "async!http://maps.googleapis.com/maps/api/js?sensor=false"],
             exports: "$.gmap3"
+        },
+        "jqcloud": {
+            deps: ["jquery"]
         },
         "hcharts": {
             "deps": ["jquery"],

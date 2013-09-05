@@ -200,7 +200,7 @@ define(["jquery", "hcharts", "highcharts_uttheme", "gadget"],
              * @method
              * @memberof module:view
              */
-            createWordCloudGadget: function(cell, id, title) {
+            createWordCloudGadget: function(cell, id, title, cloud) {
                 if ($.trim($(cell).html()) !== "") {
                     console.error("Destination " + cell + " should be empty.");
                     return;
@@ -212,7 +212,8 @@ define(["jquery", "hcharts", "highcharts_uttheme", "gadget"],
                 }
                 $(cell).addWordCloudGadget({
                     id: id,
-                    title: title
+                    title: title,
+                    cloud: cloud
                 }, function(theWordCloud) {
                     this.tweetWordCloudViews[id] = theWordCloud;
                 }.bind(this));

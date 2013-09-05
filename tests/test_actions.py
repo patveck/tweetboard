@@ -155,6 +155,34 @@ class Test(unittest.TestCase):
                                               separators=(',', ':'))]},
                          "Message should be exactly like second arg.")
 
+    def test_create_wordcloud_gadget(self):
+        self.assertEqual(actions.decode(actions.create_wordcloud_gadget("cell0",
+                                                "myWordCloud", "Just a title",
+                                                [{"text": "bla",
+                                                  "weight": 4}])),
+                         {"event": "createWordCloudGadget",
+                          "data": [json.dumps({"cell": "cell0",
+                                               "id": "myWordCloud",
+                                               "title": "Just a title",
+                                               "cloud": [{"text": "bla",
+                                                  "weight": 4}]},
+                                              sort_keys=True,
+                                              separators=(',', ':'))]},
+                         "Message should be exactly like second arg.")
+
+    def test_update_wordcloud_gadget(self):
+        self.assertEqual(actions.decode(actions.update_wordcloud_gadget(
+                                                "myWordCloud",
+                                                [{"text": "new",
+                                                  "weight": 1}])),
+                         {"event": "updateWordCloudGadget",
+                          "data": [json.dumps({"id": "myWordCloud",
+                                               "cloud": [{"text": "new",
+                                                  "weight": 1}]},
+                                              sort_keys=True,
+                                              separators=(',', ':'))]},
+                         "Message should be exactly like second arg.")
+
     def test_buildinfo(self):
         self.assertEqual(actions.decode(actions.send_buildinfo({"branch":
                                                 "master",

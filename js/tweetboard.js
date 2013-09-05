@@ -39,7 +39,8 @@ define(["jquery", "handlers", "view"],
                                    "error", "createAlertGadget", "alert",
                                    "createMapsGadget", "addMapsMarker",
                                    "createChart", "createTweetlistGadget",
-                                   "addTweet"];
+                                   "addTweet", "createWordCloudGadget",
+                                   "updateWordCloudGadget"];
 
                 /* Initialize eventsource component: */
                 for (var eventType in this.eventTypes) {
@@ -63,8 +64,6 @@ define(["jquery", "handlers", "view"],
             run: function() {
                 this.myView.createMessager("#cell8", this.eventTypes,
                     this.handleLocalMessage.bind(this));
-                this.myView.createWordCloudGadget("#cell5", "myWordCloud",
-                    "Just a word cloud");
             },
             
             /**

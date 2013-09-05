@@ -303,14 +303,6 @@ define(["jquery", "hcharts", "gmap3", "jqcloud"],
      * @memberof module:gadget
      */
     $.fn.addWordCloudGadget = function(options, addToModel) {
-        var wordArray = [
-              {text: "Lorem", weight: 15},
-              {text: "Ipsum", weight: 9, link: "http://jquery.com/"},
-              {text: "Dolor", weight: 6, 
-                  html: {title: "I can haz any html attribute"}},
-              {text: "Sit", weight: 7},
-              {text: "Amet", weight: 5}
-                      ];
         if( options.id !== undefined &&
             $("#" + options.id + "Div").size() > 0 ) {
             return this;
@@ -320,12 +312,15 @@ define(["jquery", "hcharts", "gmap3", "jqcloud"],
                 "options.");
             return this;
         }
+        if( options.cloud === undefined ) {
+            options.cloud = [{text: "Empty cloud", weight: 15}];
+        }
         var contents = [];
         // The class is part of the specification (see the JSDoc comment above:
         contents[0] = $("<div>").addClass("wordcloudgadget-contents").attr("id",
                             options.id+"Div").width("290px").height("290px");
         this.addGadget(options, contents);
-        $("#" + options.id + "Div").jQCloud(wordArray);
+        $("#" + options.id + "Div").jQCloud(options.cloud);
         addToModel(this);
         return this;
     };
