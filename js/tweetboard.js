@@ -39,7 +39,8 @@ define(["jquery", "handlers", "view"],
                                    "error", "createAlertGadget", "alert",
                                    "createMapsGadget", "addMapsMarker",
                                    "createChart", "createTweetlistGadget",
-                                   "addTweet"];
+                                   "addTweet", "createWordCloudGadget",
+                                   "updateWordCloudGadget"];
 
                 /* Initialize eventsource component: */
                 for (var eventType in this.eventTypes) {

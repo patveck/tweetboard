@@ -5,7 +5,7 @@
  * 
  */
 
-define(["jquery", "hcharts", "gmap3"],
+define(["jquery", "hcharts", "gmap3", "jqcloud"],
     /**
      * Module containing a number of jQuery plugins.
      * 
@@ -220,7 +220,7 @@ define(["jquery", "hcharts", "gmap3"],
      * Adds a tweetlist gadget to the current jQuery selection. The selection
      * is decorated with CSS class "tweetlistgadget-cell", the gadget contents
      * with CSS class "tweetlistgadget-contents". 
-     * @function addMapsGadget
+     * @function addTweetListGadget
      * @param {Object} options Settings object with "id" and "title" keys
      * @param {Function} addToModel callback to establish binding
      * @memberof module:gadget
@@ -291,4 +291,38 @@ define(["jquery", "hcharts", "gmap3"],
         return this;
     };
 
+    /**
+     * Create a gadget that shows a word cloud 
+     * 
+     * Adds a wordcloud gadget to the current jQuery selection. The selection
+     * is decorated with CSS class "wordcloudgadget-cell", the gadget contents
+     * with CSS class "wordcloudgadget-contents". 
+     * @function addWordCloudGadget
+     * @param {Object} options Settings object with "id" and "title" keys
+     * @param {Function} addToModel callback to establish binding
+     * @memberof module:gadget
+     */
+    $.fn.addWordCloudGadget = function(options, addToModel) {
+        if( options.id !== undefined &&
+            $("#" + options.id + "Div").size() > 0 ) {
+            return this;
+        }
+        if( options.id === undefined ) {
+            console.error(".addWordCloudGadget called without id key in " +
+                "options.");
+            return this;
+        }
+        if( options.cloud === undefined ) {
+            options.cloud = [{text: "Empty cloud", weight: 15}];
+        }
+        var contents = [];
+        // The class is part of the specification (see the JSDoc comment above:
+        contents[0] = $("<div>").addClass("wordcloudgadget-contents").attr("id",
+                            options.id+"Div").width("290px").height("290px");
+        this.addGadget(options, contents);
+        $("#" + options.id + "Div").jQCloud(options.cloud);
+        addToModel(this);
+        return this;
+    };
+    
 });

@@ -30,6 +30,7 @@ define(["jquery", "hcharts", "highcharts_uttheme", "gadget"],
                 this.chartViews = [];
                 this.mapsViews = [];
                 this.tweetListViews = [];
+                this.wordCloudViews = [];
                 this.monitorView = null;
                 this.messageView = null;
                 this.alertViews = [];
@@ -183,6 +184,38 @@ define(["jquery", "hcharts", "highcharts_uttheme", "gadget"],
                     title: title
                 }, function(theTweetList) {
                     this.tweetListViews[id] = theTweetList;
+                }.bind(this));
+            },
+            
+            /**
+             * Create a wordcloud gadget. 
+             *
+             * already been created, this method does nothing.
+             * @param {String} cell Id of the HTML element to which the
+             * gadget is appended
+             * @param {String} id A string that serves as reference for the
+             * gadget that is created
+             * @param {String} title Title of the gadget, will be displayed in
+             * the gadget's title bar
+             * @method
+             * @memberof module:view
+             */
+            createWordCloudGadget: function(cell, id, title, cloud) {
+                if ($.trim($(cell).html()) !== "") {
+                    console.error("Destination " + cell + " should be empty.");
+                    return;
+                }
+                if (this.wordCloudViews.hasOwnProperty(id)) {
+                    console.error("A word cloud gadget with id " + id +
+                                  " already exists.");
+                    return;
+                }
+                $(cell).addWordCloudGadget({
+                    id: id,
+                    title: title,
+                    cloud: cloud
+                }, function(theWordCloud) {
+                    this.tweetWordCloudViews[id] = theWordCloud;
                 }.bind(this));
             },
             

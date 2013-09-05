@@ -260,6 +260,53 @@ def add_tweetlist_tweet(gadget_id, tweet_data):
             "data": [_serialize({"id": gadget_id, "tweet": tweet_data})]})
 
 #
+# Wordcloud gadget actions
+#
+
+
+def create_wordcloud_gadget(cell, gadget_id, gadget_title, cloud):
+    """Create message that creates a new wordcloud gadget in dashboard.
+
+    This action creates a message that when received by the client creates a
+    gadget that shows a wordcloud, also known as a tag cloud.
+
+    Args:
+        cell:
+        gadget_id:
+        gadget_title:
+        cloud:
+            Wordcloud data
+    Returns:
+        A dict with two members ("event" and "data"), with the value of "data"
+        a JSON serialization of the arguments. This is the format expected by
+        SseHTTPRequestHandler.
+    """
+    return _encode({"event": "createWordCloudGadget",
+            "data": [_serialize({"cell": cell, "id": gadget_id,
+                                 "title": gadget_title, "cloud": cloud})]})
+
+
+def update_wordcloud_gadget(gadget_id, cloud):
+    """Updates existing wordcloud in dashboard with new data.
+
+    This action creates a message that when received by the client updates an
+    exisint word cloud with new data.
+
+    Args:
+        gadget_id:
+        cloud:
+            Wordcloud data
+    Returns:
+        A dict with two members ("event" and "data"), with the value of "data"
+        a JSON serialization of the arguments. This is the format expected by
+        SseHTTPRequestHandler.
+    """
+    return _encode({"event": "updateWordCloudGadget",
+            "data": [_serialize({"id": gadget_id,
+                                 "cloud": cloud})]})
+
+
+#
 # Buildinfo action:
 #
 

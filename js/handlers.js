@@ -66,6 +66,19 @@ define(["jquery"],
                 this.myView.tweetListViews[data.id].addTweet(data.tweet);
             },
             
+            createWordCloudGadgetEventReceived: function(event, data) {
+                console.log("message event: " + data);
+                // TODO: Check whether cell, id and options exist:
+                this.myView.createWordCloudGadget("#" + data.cell, data.id,
+                    data.title, data.cloud);
+            },
+            
+            updateWordCloudGadgetEventReceived: function(event, data) {
+                console.log("message event: " + data);
+                // TODO: Check whether cell, id and options exist:
+                // this.myView.updateWordCloudGadget(data.id, data.cloud);
+            },
+                            
             alertEventReceived: function(event, data) {
                 console.log("alert received: " + data);
                 // TODO: Check whether cell and id exist:
