@@ -129,8 +129,8 @@ class SseHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 _message_contents = self._event_queue.get()
                 if self._check_message(_message_contents):
                     self._send_message(_message_contents, _message_number)
-                if _message_contents["event"] == "terminate":
-                    _stop = True
+                    if _message_contents["event"] == "terminate":
+                        _stop = True
             except IOError as ex:
                 if ex.errno == 10053 or ex.errno == 10054 or ex.errno == 32:
                     self.logger.info("_SseSender(Thread-{0}): "
@@ -170,6 +170,9 @@ class SseHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 
     def _check_message(self, _message_contents):
         """Check whether message complies with expected format."""
+        if not type(_message_contents) is dict:
+            self.logger.error("Message should be a dict.")
+            return False
         if not "event" in _message_contents:
             self.logger.error("Message dict has no event key.")
             return False

@@ -125,19 +125,22 @@ def put_initial_messages(_new_queue):
 #                      "y": random.random()}
 #         listeners_chart_options["series"][0]["data"].append(new_point)
 
-    _new_queue.put(actions.create_alert_gadget("cell0", "myAlerter", "Alert!"))
-    _new_queue.put(actions.create_alert_gadget("cell9", "serverinfo",
-                                               "Server information"))
-    _new_queue.put(actions.alert("Server started!", "serverinfo"))
-    _new_queue.put(actions.create_maps_gadget("cell3", "myMap1", "Tweet geos",
-                                              map_options))
-    _new_queue.put(actions.add_maps_marker("myMap1", 78.840319, 16.585922,
-                                           "Jan was here!"))
-    _new_queue.put(actions.create_tweetlist_gadget("cell4", "allTweets",
-                                                   "Random tweets"))
-    _new_queue.put(actions.create_general_chart("cell1", "memusage",
-                                                "Server max RSS",
-                                                memusage_chart_options))
-    _new_queue.put(actions.create_general_chart("cell2", "listeners",
-                                                "Number of listeners",
-                                                listeners_chart_options))
+    _new_queue.put(actions.decode(actions.create_alert_gadget("cell0",
+                                      "myAlerter", "Alert!")))
+    _new_queue.put(actions.decode(actions.create_alert_gadget("cell9",
+                                      "serverinfo", "Server information")))
+    _new_queue.put(actions.decode(actions.alert("Server started!",
+                                                "serverinfo")))
+    _new_queue.put(actions.decode(actions.create_maps_gadget("cell3", "myMap1",
+                                                             "Tweet geos",
+                                                             map_options)))
+    _new_queue.put(actions.decode(actions.add_maps_marker("myMap1", 78.840319,
+                                        16.585922, "Jan was here!")))
+    _new_queue.put(actions.decode(actions.create_tweetlist_gadget("cell4",
+                                        "allTweets", "Random tweets")))
+    _new_queue.put(actions.decode(actions.create_general_chart("cell1",
+                                        "memusage", "Server max RSS",
+                                        memusage_chart_options)))
+    _new_queue.put(actions.decode(actions.create_general_chart("cell2",
+                                        "listeners", "Number of listeners",
+                                        listeners_chart_options)))
