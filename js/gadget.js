@@ -325,4 +325,11 @@ define(["jquery", "hcharts", "gmap3", "jqcloud"],
         return this;
     };
     
+    $.fn.updateWordCloudGadget = function(cloud) {
+        var myId = this.children().first().attr("id");
+        $("#" + myId + "Div").empty();
+        $("#" + myId + "Div").jQCloud(cloud);
+        return this;
+    }
+    
 });

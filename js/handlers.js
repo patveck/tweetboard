@@ -76,7 +76,7 @@ define(["jquery"],
             updateWordCloudGadgetEventReceived: function(event, data) {
                 console.log("message event: " + data);
                 // TODO: Check whether cell, id and options exist:
-                // this.myView.updateWordCloudGadget(data.id, data.cloud);
+                this.myView.updateWordCloudGadget(data.id, data.cloud);
             },
                             
             alertEventReceived: function(event, data) {

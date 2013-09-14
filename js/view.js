@@ -215,8 +215,27 @@ define(["jquery", "hcharts", "highcharts_uttheme", "gadget"],
                     title: title,
                     cloud: cloud
                 }, function(theWordCloud) {
-                    this.tweetWordCloudViews[id] = theWordCloud;
+                    this.wordCloudViews[id] = theWordCloud;
                 }.bind(this));
+            },
+            
+            /**
+             * Update wordcloud in existing wordcloud gadget. 
+             *
+             * already been created, this method does nothing.
+             * @param {String} id Reference of the wordcloud that is to be
+             * updated
+             * @param {Object} cloud New wordcloud data
+             * @method
+             * @memberof module:view
+             */
+            updateWordCloudGadget: function(id, cloud) {
+                if (!this.wordCloudViews.hasOwnProperty(id)) {
+                    console.error("No word cloud gadget with id " + id +
+                                  " exists.");
+                    return;
+                }
+                this.wordCloudViews[id].updateWordCloudGadget(cloud);
             },
             
             /**
