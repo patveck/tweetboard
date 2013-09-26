@@ -5,7 +5,7 @@
  * 
  */
 
-define(["jquery", "hcharts"],
+define(["jquery", "hcharts", "gmap3", "jqcloud"],
     /**
      * Module containing a number of jQuery plugins.
      * 
@@ -190,4 +190,139 @@ define(["jquery", "hcharts"],
         }.bind(this), 8000);
         return this;
     };
+
+    /**
+     * Create a gadget that shows a Google map.
+     * 
+     * Adds a Google maps gadget to the current jQuery selection. The selection
+     * is decorated with CSS class "mapsgadget-cell", the gadget contents with
+     * CSS class "mapsgadget". 
+     * @function addMapsGadget
+     * @param {Object} options Settings object with "id" and "title" keys
+     * @param {Function} addToModel callback to establish binding
+     * @memberof module:gadget
+     */
+    $.fn.addMapsGadget = function(options, addToModel) {
+        var contents = [];
+        // The class is part of the specification (see the JSDoc comment above:
+        contents[0] = $('<div class="mapsgadget"></div>');
+        this.addClass("mapsgadget-cell");
+        this.addGadget(options, contents);
+        var theMap = contents[0].gmap3(options.mapsConfig);
+        addToModel(theMap);
+        return this;
+    };
+
+    /**
+     * Create a gadget that shows a tweetlist (a list of tweets, like Twitter's
+     * timeline.
+     * 
+     * Adds a tweetlist gadget to the current jQuery selection. The selection
+     * is decorated with CSS class "tweetlistgadget-cell", the gadget contents
+     * with CSS class "tweetlistgadget-contents". 
+     * @function addTweetListGadget
+     * @param {Object} options Settings object with "id" and "title" keys
+     * @param {Function} addToModel callback to establish binding
+     * @memberof module:gadget
+     */
+    $.fn.addTweetListGadget = function(options, addToModel) {
+        var contents = [];
+        // The class is part of the specification (see the JSDoc comment above:
+        contents[0] = $('<ol class="tweetlistgadget-contents ' +
+                        'stream-items js-navigable-stream"></ol>');
+        this.addClass("tweetlistgadget-cell");
+        this.addGadget(options, contents);
+        addToModel(this);
+        return this;
+    };
+    
+    $.fn.addTweet = function(tweet) {
+        // TODO: Check if selection has correct type
+        var newItem = $('<li class="js-stream-item stream-item stream-item ' +
+                        'expanding-stream-item"></li>');
+        var tweetDiv = $('<div class="tweet original-tweet js-stream-tweet ' +
+                         'js-actionable-tweet js-profile-popup-actionable ' +
+                         'js-original-tweet"></div>');
+        var contentDiv = $('<div class="content"></div>');
+        var headerDiv = $('<div class="stream-item-header"></div>');
+
+        // Build a tag image and header:
+        var aTag1 = $('<a class="account-group js-account-group ' +
+                      'js-action-profile js-user-profile-link js-nav"></a>');
+        aTag1.attr("href", "http://twitter.com/" + tweet.user.screen_name);
+        var avatar = $("<img>").addClass("avatar js-action-profile-avatar");
+        avatar.attr("src", tweet.user.profile_image_url);
+        aTag1.append(avatar);
+        aTag1.append($('<strong class="fullname js-action-profile-name ' +
+                       'show-popup-with-id">' + tweet.user.name + '</strong>'));
+        aTag1.append($('<span>&rlm;&nbsp;</span>'));
+        aTag1.append($('<span class="username js-action-profile-name">' +
+                       '<s>@</s><b>' + tweet.user.screen_name + '</b></span>'));
+        headerDiv.append(aTag1);
+        
+        // Build timestamp:
+        var smallTag = $('<small class="time"></small>');
+        var aTag2 = $('<a class="tweet-timestamp js-permalink js-nav"></a>');
+        aTag2.attr("href", "http://twitter.com/" + tweet.user.screen_name +
+                   "/status/" + tweet.id);
+        aTag2.attr("title", tweet.created_at);
+        aTag2.append($('<span class="_timestamp js-short-timestamp ' +
+                       'js-relative-timestamp">' + tweet.created_at +
+                       '</span>'));
+        smallTag.append(aTag2);
+        headerDiv.append(smallTag);
+        contentDiv.append(headerDiv);
+        
+        // Build contents:
+        var pTag = $('<p class="js-tweet-text tweet-text">' + tweet.text +
+                     '</p>');
+        contentDiv.append(pTag);
+
+        // Build outer structure of containing divs:
+        tweetDiv.append(contentDiv);
+        newItem.append(tweetDiv);
+        var theGadget = this.find("ol");
+        theGadget.prepend(newItem);
+        // TODO: remove last one if more than 20
+        // alert();
+        if (theGadget.children().size() > 4) {
+            theGadget.children().last().remove();
+        }
+        return this;
+    };
+
+    /**
+     * Create a gadget that shows a word cloud 
+     * 
+     * Adds a wordcloud gadget to the current jQuery selection. The selection
+     * is decorated with CSS class "wordcloudgadget-cell", the gadget contents
+     * with CSS class "wordcloudgadget-contents". 
+     * @function addWordCloudGadget
+     * @param {Object} options Settings object with "id" and "title" keys
+     * @param {Function} addToModel callback to establish binding
+     * @memberof module:gadget
+     */
+    $.fn.addWordCloudGadget = function(options, addToModel) {
+        if( options.id !== undefined &&
+            $("#" + options.id + "Div").size() > 0 ) {
+            return this;
+        }
+        if( options.id === undefined ) {
+            console.error(".addWordCloudGadget called without id key in " +
+                "options.");
+            return this;
+        }
+        if( options.cloud === undefined ) {
+            options.cloud = [{text: "Empty cloud", weight: 15}];
+        }
+        var contents = [];
+        // The class is part of the specification (see the JSDoc comment above:
+        contents[0] = $("<div>").addClass("wordcloudgadget-contents").attr("id",
+                            options.id+"Div").width("290px").height("290px");
+        this.addGadget(options, contents);
+        $("#" + options.id + "Div").jQCloud(options.cloud);
+        addToModel(this);
+        return this;
+    };
+    
 });

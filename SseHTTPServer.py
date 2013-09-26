@@ -97,6 +97,8 @@ class SseHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         """
         self.logger.debug("SseHTTPRequestHandler(Thread-%s): do_GET, path=%s",
                          threading.current_thread().ident, self.path)
+        threading.current_thread().name = (self.path + "_thread_" +
+                                           str(threading.current_thread().ident))
         if self.path == SseHTTPRequestHandler.eventsource_path:
             self._start_event_stream()
         else:
@@ -106,7 +108,15 @@ class SseHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         """Initialize event queue, send headers, start sending events."""
 
         # Register with an event queue, which will be used as event source:
-        self._call_factory("subscribe")
+        self._event_queue = self._call_factory("subscribe")
+        if self._event_queue is None:
+            self.logger.debug("SseHTTPRequestHandler(Thread-%s): no queue, "
+                              "stopping this thread",
+                              threading.current_thread().ident)
+            # As per http://dev.w3.org/html5/eventsource/, a response code
+            # of 204 tells the browser not to reconnect:
+            self.send_response(204)
+            return
         self.logger.debug("SseHTTPRequestHandler(Thread-%s): registered queue, "
                      "start sending events", threading.current_thread().ident)
 
@@ -129,8 +139,8 @@ class SseHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 _message_contents = self._event_queue.get()
                 if self._check_message(_message_contents):
                     self._send_message(_message_contents, _message_number)
-                if _message_contents["event"] == "terminate":
-                    _stop = True
+                    if _message_contents["event"] == "terminate":
+                        _stop = True
             except IOError as ex:
                 if ex.errno == 10053 or ex.errno == 10054 or ex.errno == 32:
                     self.logger.info("_SseSender(Thread-{0}): "
@@ -146,6 +156,8 @@ class SseHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 self.logger.error("_SseSender(Thread-{0}): Unexpected error: "
                               "{1}".format(threading.current_thread().ident,
                                            sys.exc_info()[0]))
+        self.logger.info("_SseSender(Thread-{0}): stopping _send_events "
+                         "loop.".format(threading.current_thread().ident))
         self._call_factory("unsubscribe")
 
     def _call_factory(self, action):
@@ -164,12 +176,15 @@ class SseHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                                      "event_queue_factory not callable",
                                      threading.current_thread().ident)
                 exit()
-            self._event_queue = SseHTTPRequestHandler.event_queue_factory(  # pylint: disable=E1102
+            return SseHTTPRequestHandler.event_queue_factory(  # pylint: disable=E1102
                                 "Thread-%s" % threading.current_thread().ident,
                                 action)
 
     def _check_message(self, _message_contents):
         """Check whether message complies with expected format."""
+        if not type(_message_contents) is dict:
+            self.logger.error("Message should be a dict.")
+            return False
         if not "event" in _message_contents:
             self.logger.error("Message dict has no event key.")
             return False
